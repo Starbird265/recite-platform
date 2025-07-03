@@ -108,7 +108,7 @@ export default function AdminDashboard() {
       const totalProgressCount = progressData?.length || 1
       const completionRate = Math.round((completedCount / totalProgressCount) * 100)
 
-      const averageScore = progressData?.length > 0 
+      const averageScore = progressData && progressData.length > 0 
         ? Math.round(progressData.reduce((sum, p) => sum + (p.score || 0), 0) / progressData.length)
         : 0
 

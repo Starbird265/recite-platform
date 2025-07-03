@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import Razorpay from 'razorpay'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../../../lib/supabase'
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,

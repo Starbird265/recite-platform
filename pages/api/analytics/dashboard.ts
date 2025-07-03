@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../../../lib/supabase'
 
 interface AnalyticsData {
   overview: {
@@ -83,7 +83,7 @@ export default async function handler(
       .select('completed, score, lessons(module)')
 
     const completedLessons = progressData?.filter(p => p.completed) || []
-    const completionRate = progressData?.length > 0 
+    const completionRate = progressData && progressData.length > 0 
       ? Math.round((completedLessons.length / progressData.length) * 100)
       : 0
 
@@ -103,7 +103,7 @@ export default async function handler(
     })
 
     // Generate learning progress by module
-    const moduleStats = progressData?.reduce((acc, progress) => {
+    const moduleStats = progressData?.reduce((acc: Record<string, { total: number; completed: number; scores: number[] }>, progress: any) => {
       const module = progress.lessons?.module || 'Unknown'
       if (!acc[module]) {
         acc[module] = { total: 0, completed: 0, scores: [] }
@@ -116,7 +116,7 @@ export default async function handler(
         }
       }
       return acc
-    }, {} as Record<string, { total: number; completed: number; scores: number[] }>) || {}
+    }, {}) || {}
 
     const learningProgress = Object.entries(moduleStats).map(([module, stats]) => ({
       module,

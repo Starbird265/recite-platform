@@ -1,0 +1,463 @@
+/* 🎮 Pixel-Perfect RS-CIT Platform Styles */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+/* 🎯 Core Pixel Variables */
+:root {
+  /* Pixel Color Palette */
+  --pixel-primary: #0066ff;
+  --pixel-primary-dark: #0052cc;
+  --pixel-primary-light: #3385ff;
+  --pixel-secondary: #ff6600;
+  --pixel-secondary-dark: #cc5200;
+  --pixel-success: #00cc00;
+  --pixel-warning: #ffcc00;
+  --pixel-danger: #ff0066;
+  --pixel-info: #00ccff;
+  
+  /* Pixel Backgrounds */
+  --pixel-bg-primary: #1a1a2e;
+  --pixel-bg-secondary: #16213e;
+  --pixel-bg-tertiary: #0f3460;
+  --pixel-bg-light: #f0f8ff;
+  --pixel-bg-dark: #0a0a0a;
+  
+  /* Pixel Text */
+  --pixel-text-primary: #ffffff;
+  --pixel-text-secondary: #cccccc;
+  --pixel-text-muted: #888888;
+  --pixel-text-dark: #333333;
+  
+  /* Pixel Borders */
+  --pixel-border-width: 4px;
+  --pixel-border-color: #333333;
+  --pixel-border-bright: #ffffff;
+  
+  /* Pixel Shadows */
+  --pixel-shadow: 4px 4px 0px rgba(0, 0, 0, 0.8);
+  --pixel-shadow-hover: 6px 6px 0px rgba(0, 0, 0, 0.6);
+  --pixel-shadow-pressed: 2px 2px 0px rgba(0, 0, 0, 0.8);
+  
+  /* Pixel Sizes */
+  --pixel-unit: 8px;
+  --pixel-border-radius: 0px; /* No rounded corners in pixel world */
+}
+
+/* 🎮 Pixel Font System */
+.pixel-font-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.pixel-font-header {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1.4;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pixel-font-body {
+  font-family: 'Orbitron', monospace;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
+
+.pixel-font-small {
+  font-family: 'Orbitron', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+
+/* 🎯 Pixel Button System */
+.pixel-btn {
+  @apply relative inline-block px-6 py-3 font-bold text-center cursor-pointer transition-all duration-100;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: var(--pixel-border-width) solid var(--pixel-border-color);
+  border-radius: var(--pixel-border-radius);
+  box-shadow: var(--pixel-shadow);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.pixel-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--pixel-shadow-hover);
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--pixel-shadow-pressed);
+}
+
+.pixel-btn-primary {
+  @apply pixel-btn;
+  background: linear-gradient(135deg, var(--pixel-primary-light), var(--pixel-primary));
+  color: var(--pixel-text-primary);
+  border-color: var(--pixel-primary-dark);
+}
+
+.pixel-btn-secondary {
+  @apply pixel-btn;
+  background: linear-gradient(135deg, #ff9933, var(--pixel-secondary));
+  color: var(--pixel-text-primary);
+  border-color: var(--pixel-secondary-dark);
+}
+
+.pixel-btn-success {
+  @apply pixel-btn;
+  background: linear-gradient(135deg, #33ff33, var(--pixel-success));
+  color: var(--pixel-text-primary);
+  border-color: #009900;
+}
+
+.pixel-btn-danger {
+  @apply pixel-btn;
+  background: linear-gradient(135deg, #ff3399, var(--pixel-danger));
+  color: var(--pixel-text-primary);
+  border-color: #cc0052;
+}
+
+.pixel-btn-outline {
+  @apply pixel-btn;
+  background: transparent;
+  color: var(--pixel-primary);
+  border-color: var(--pixel-primary);
+}
+
+.pixel-btn-outline:hover {
+  background: var(--pixel-primary);
+  color: var(--pixel-text-primary);
+}
+
+/* 🎮 Pixel Card System */
+.pixel-card {
+  @apply relative bg-white border-4 border-black;
+  border-radius: var(--pixel-border-radius);
+  box-shadow: var(--pixel-shadow);
+  background: linear-gradient(135deg, #ffffff, #f0f8ff);
+  image-rendering: pixelated;
+}
+
+.pixel-card-dark {
+  @apply pixel-card;
+  background: linear-gradient(135deg, var(--pixel-bg-secondary), var(--pixel-bg-primary));
+  color: var(--pixel-text-primary);
+  border-color: var(--pixel-border-bright);
+}
+
+.pixel-card-gaming {
+  @apply pixel-card;
+  background: linear-gradient(135deg, #001122, #003366);
+  color: var(--pixel-text-primary);
+  border-color: var(--pixel-info);
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-card-gaming::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--pixel-info), transparent);
+  animation: pixel-scan 2s linear infinite;
+}
+
+@keyframes pixel-scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* 🎯 Pixel Input System */
+.pixel-input {
+  @apply w-full px-4 py-3 border-4 border-gray-800 bg-white;
+  font-family: 'Orbitron', monospace;
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: var(--pixel-border-radius);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.pixel-input:focus {
+  @apply outline-none border-blue-500;
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #3385ff;
+}
+
+.pixel-input-dark {
+  @apply pixel-input;
+  background: var(--pixel-bg-secondary);
+  color: var(--pixel-text-primary);
+  border-color: var(--pixel-border-bright);
+}
+
+/* 🎮 Pixel Progress System */
+.pixel-progress {
+  @apply w-full h-8 bg-gray-300 border-4 border-black relative overflow-hidden;
+  border-radius: var(--pixel-border-radius);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-progress-bar {
+  @apply h-full transition-all duration-500 relative;
+  background: linear-gradient(90deg, #00ff00, #00cc00);
+  background-size: 16px 16px;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1) 0px,
+      rgba(255, 255, 255, 0.1) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  animation: pixel-progress 2s linear infinite;
+}
+
+@keyframes pixel-progress {
+  0% { background-position: 0 0; }
+  100% { background-position: 16px 0; }
+}
+
+/* 🎯 Pixel Badge System */
+.pixel-badge {
+  @apply inline-block px-3 py-1 text-xs font-bold border-2 border-black;
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: var(--pixel-border-radius);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.6);
+}
+
+.pixel-badge-primary {
+  @apply pixel-badge;
+  background: var(--pixel-primary);
+  color: var(--pixel-text-primary);
+}
+
+.pixel-badge-success {
+  @apply pixel-badge;
+  background: var(--pixel-success);
+  color: var(--pixel-text-primary);
+}
+
+.pixel-badge-warning {
+  @apply pixel-badge;
+  background: var(--pixel-warning);
+  color: var(--pixel-text-dark);
+}
+
+.pixel-badge-danger {
+  @apply pixel-badge;
+  background: var(--pixel-danger);
+  color: var(--pixel-text-primary);
+}
+
+/* 🎮 Pixel Navigation */
+.pixel-nav {
+  @apply border-b-4 border-black;
+  background: linear-gradient(135deg, var(--pixel-bg-secondary), var(--pixel-bg-primary));
+  box-shadow: 0 4px 0px rgba(0, 0, 0, 0.3);
+}
+
+.pixel-nav-item {
+  @apply px-6 py-4 border-r-4 border-black text-white hover:bg-blue-600 transition-all duration-200;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pixel-nav-item:last-child {
+  @apply border-r-0;
+}
+
+.pixel-nav-item.active {
+  @apply bg-blue-500;
+  box-shadow: inset 0 4px 0px rgba(0, 0, 0, 0.3);
+}
+
+/* 🎯 Pixel Tables */
+.pixel-table {
+  @apply w-full border-4 border-black;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--pixel-border-radius);
+  font-family: 'Orbitron', monospace;
+}
+
+.pixel-table th {
+  @apply px-4 py-3 bg-gray-800 text-white border-b-4 border-black font-bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pixel-table td {
+  @apply px-4 py-3 border-b-2 border-gray-300 bg-white;
+}
+
+.pixel-table tr:hover td {
+  @apply bg-blue-50;
+}
+
+/* 🎮 Pixel Animations */
+@keyframes pixel-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes pixel-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes pixel-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(51, 133, 255, 0.7); }
+  50% { box-shadow: 0 0 0 8px rgba(51, 133, 255, 0); }
+}
+
+.pixel-bounce {
+  animation: pixel-bounce 2s infinite;
+}
+
+.pixel-shake {
+  animation: pixel-shake 0.5s ease-in-out;
+}
+
+.pixel-glow {
+  animation: pixel-glow 2s infinite;
+}
+
+/* 🎯 Pixel Utilities */
+.pixel-border {
+  border: var(--pixel-border-width) solid var(--pixel-border-color);
+  border-radius: var(--pixel-border-radius);
+}
+
+.pixel-shadow {
+  box-shadow: var(--pixel-shadow);
+}
+
+.pixel-shadow-hover:hover {
+  box-shadow: var(--pixel-shadow-hover);
+}
+
+.pixel-crisp {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 🎮 Pixel Layout */
+.pixel-container {
+  @apply max-w-7xl mx-auto px-4;
+}
+
+.pixel-grid {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.pixel-grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.pixel-grid-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.pixel-grid-4 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+/* 🎯 Pixel Background Patterns */
+.pixel-bg-dots {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.pixel-bg-grid {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.pixel-bg-circuit {
+  background: linear-gradient(135deg, #001122, #003366);
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 16px,
+      rgba(0, 255, 255, 0.1) 16px,
+      rgba(0, 255, 255, 0.1) 32px
+    );
+}
+
+/* 🎮 Pixel Responsive */
+@media (max-width: 768px) {
+  .pixel-font-title {
+    font-size: 12px;
+  }
+  
+  .pixel-font-header {
+    font-size: 18px;
+  }
+  
+  .pixel-btn {
+    padding: 12px 16px;
+  }
+  
+  .pixel-nav-item {
+    padding: 12px 16px;
+  }
+}
+
+/* 🎯 Pixel Accessibility */
+.pixel-focus:focus {
+  outline: 4px solid var(--pixel-info);
+  outline-offset: 2px;
+}
+
+.pixel-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 🎮 Pixel Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .pixel-auto-dark {
+    background: var(--pixel-bg-primary);
+    color: var(--pixel-text-primary);
+  }
+  
+  .pixel-auto-dark .pixel-card {
+    background: var(--pixel-bg-secondary);
+    color: var(--pixel-text-primary);
+    border-color: var(--pixel-border-bright);
+  }
+}

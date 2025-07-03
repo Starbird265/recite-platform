@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -64,62 +63,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     getSessionAndProfile();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('role, centre_id, streak_count, last_completed_date')
-            .eq('id', currentUser.id)
-            .single();
-
-          if (profileError) {
-            if (profileError.code === 'PGRST116') { // No rows found
-              await createUserProfile(currentUser);
-              setRole('student'); // Default role
-              setCentreId(null);
-              setStreakCount(0);
-              setLastCompletedDate(null);
-            } else {
-              console.error('Error fetching profile on auth change:', profileError);
-              setRole(null);
-              setCentreId(null);
-              setStreakCount(null);
-              setLastCompletedDate(null);
-            }
-          } else {
-            setRole(profileData?.role || null);
-            setCentreId(profileData?.centre_id || null);
-            setStreakCount(profileData?.streak_count || null);
-            setLastCompletedDate(profileData?.last_completed_date || null);
-          }
-        } else {
-          setRole(null);
-          setCentreId(null);
-          setStreakCount(null);
-          setLastCompletedDate(null);
-        }
-      }
-    );
-
-    const createUserProfile = async (user: User) => {
-      const { error } = await supabase
-        .from('profiles')
-        .insert([
-          { id: user.id, email: user.email, role: 'student' } // Default role for new users
-        ]);
-      if (error) {
-        console.error('Error creating user profile:', error);
-      }
-    };
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
   }, []);
 
   return (

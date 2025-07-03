@@ -151,7 +151,7 @@ export default function PartnersDashboard() {
 
       // Process student data
       const studentData: Student[] = enrollmentData?.map(enrollment => {
-        const completedLessons = enrollment.user_progress?.filter(p => p.completed).length || 0
+        const completedLessons = enrollment.user_progress?.filter((p: any) => p.completed).length || 0
         const totalLessons = enrollment.user_progress?.length || 1
         const progress = Math.round((completedLessons / totalLessons) * 100)
 

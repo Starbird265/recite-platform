@@ -49,8 +49,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null)
       setLoading(false)
 
-      // Handle user profile creation on signup
-      if (event === 'SIGNED_UP' && session?.user) {
+      // Handle user profile creation on signin
+      if (event === 'SIGNED_IN' && session?.user) {
         await createUserProfile(session.user)
       }
     })
