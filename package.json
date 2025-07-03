@@ -20,6 +20,7 @@
     "@supabase/auth-helpers-nextjs": "^0.8.0",
     "@supabase/supabase-js": "^2.38.0",
     "@types/react-router-dom": "^5.3.3",
+    "bootstrap": "^5.3.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
@@ -31,10 +32,12 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.47.0",
+    "react-hot-toast": "^2.5.2",
     "react-map-gl": "^7.1.0",
     "react-router-dom": "^7.6.3",
     "recharts": "^2.8.0",
     "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.0"
   },
   "devDependencies": {

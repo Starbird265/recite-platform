@@ -15,6 +15,12 @@ type CentreType = {
   // Add other centre properties like contact, status, etc.
 };
 
+const emiPlans = [
+  { label: '3 months (₹1,566/mo)', value: '3' },
+  { label: '4 months (₹1,175/mo)', value: '4' },
+  { label: '6 months (₹783/mo)', value: '6' },
+];
+
 const CentreFinder = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -24,6 +30,11 @@ const CentreFinder = () => {
   const [centres, setCentres] = useState<CentreType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCentre, setSelectedCentre] = useState<string | null>(null);
+  const [selectedEmi, setSelectedEmi] = useState<string>('3');
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const { user } = require('./AuthContext').useAuth();
 
   useEffect(() => {
     const fetchCentres = async () => {
@@ -80,32 +91,98 @@ const CentreFinder = () => {
     };
   }, [centres]); // Re-run effect when centres data changes
 
+  const handleSelect = async (centreId: string) => {
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      if (!user) throw new Error('User not found.');
+      // Save centre and EMI plan to user profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({ centre_id: centreId, emi_plan: selectedEmi })
+        .eq('id', user.id);
+      if (error) throw error;
+      setSelectedCentre(centreId);
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save selection.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return <div>Loading centres...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
-    <div className="container mt-4">
-      <div className="card">
-        <div className="card-header"><h2>Find a Centre</h2></div>
-        <div className="card-body">
-          <div ref={mapContainer} style={{ height: '400px', width: '100%' }} className="mb-3" />
-          <div className="sidebar">
-            Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-lg-10">
+          <div className="card shadow-lg border-0 mb-4">
+            <div className="card-body p-4">
+              <h2 className="card-title text-center mb-3">Step 2: Select Your Centre & EMI Plan</h2>
+              <p className="text-center text-muted mb-4">Choose a nearby ITGK centre and your preferred EMI plan to continue your RS-CIT journey.</p>
+              <div className="mb-4">
+                <div ref={mapContainer} style={{ height: '350px', width: '100%' }} className="mb-3 rounded" />
+                <div className="sidebar mb-2 text-center text-secondary">
+                  Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+                </div>
+              </div>
+              <div className="mb-4">
+                <h4 className="mb-2">Choose EMI Plan <span className='text-danger'>*</span></h4>
+                <div className="d-flex flex-wrap gap-3 justify-content-center">
+                  {emiPlans.map((plan) => (
+                    <div className="form-check form-check-inline" key={plan.value}>
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="emiPlan"
+                        id={`emi-${plan.value}`}
+                        value={plan.value}
+                        checked={selectedEmi === plan.value}
+                        onChange={() => setSelectedEmi(plan.value)}
+                        disabled={success}
+                      />
+                      <label className="form-check-label fw-bold" htmlFor={`emi-${plan.value}`}>{plan.label}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <h4 className="mb-3">Available Centres</h4>
+              <div className="row">
+                {centres.length > 0 ? (
+                  centres.map((centre) => (
+                    <div className="col-md-6 col-lg-4 mb-4" key={centre.id}>
+                      <div className={`card h-100 ${selectedCentre === centre.id ? 'border-success' : ''}`}>
+                        <div className="card-body">
+                          <h5 className="card-title">{centre.name}</h5>
+                          <p className="card-text">{centre.address}</p>
+                          <button
+                            className="btn btn-primary w-100 mt-2"
+                            onClick={() => handleSelect(centre.id)}
+                            disabled={saving || success}
+                          >
+                            {selectedCentre === centre.id && success ? 'Selected!' : 'Select'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-12"><p>No approved centres found.</p></div>
+                )}
+              </div>
+              {success && (
+                <div className="alert alert-success text-center mt-4">
+                  Centre and EMI plan saved! You can now continue to your dashboard.
+                </div>
+              )}
+              {error && (
+                <div className="alert alert-danger text-center mt-4">{error}</div>
+              )}
+            </div>
           </div>
-          <h3>Available Centres</h3>
-          {centres.length > 0 ? (
-            <ul className="list-group">
-              {centres.map((centre) => (
-                <li key={centre.id} className="list-group-item">
-                  <h5>{centre.name}</h5>
-                  <p>{centre.address}</p>
-                  {/* Add more centre details here */}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No approved centres found.</p>
-          )}
         </div>
       </div>
     </div>

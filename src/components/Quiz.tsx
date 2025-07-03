@@ -12,7 +12,9 @@ type QuestionType = {
   explanation?: string;
 };
 
-const Quiz = ({ quizId }: { quizId: string }) => {
+type QuizProps = { quizId: string; onComplete?: () => void };
+
+const Quiz = ({ quizId, onComplete }: QuizProps) => {
   const [questions, setQuestions] = useState<QuestionType[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
@@ -111,6 +113,9 @@ const Quiz = ({ quizId }: { quizId: string }) => {
             <p>You scored {score} out of {questions.length}.</p>
             <Link href="/" className="btn btn-primary">Back to Dashboard</Link>
             {/* Optionally add a retry button or review answers */}
+            {onComplete && (
+              <button className="btn btn-secondary ms-2" onClick={onComplete}>Continue</button>
+            )}
           </div>
         </div>
       </div>

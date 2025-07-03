@@ -8,6 +8,8 @@ import Link from 'next/link';
 type ProfileType = {
   id: string;
   email: string;
+  name?: string;
+  phone?: string;
   // Add other profile fields here, e.g., name, avatar_url
 };
 
@@ -26,6 +28,11 @@ const Profile = () => {
   const [userProgress, setUserProgress] = useState<UserProgressType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfileAndProgress = async () => {
@@ -37,23 +44,24 @@ const Profile = () => {
         // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, email')
+          .select('id, email, name, phone')
           .eq('id', user.id)
           .single();
 
         if (profileError) throw profileError;
         setProfile(profileData);
+        setName(profileData?.name || '');
+        setPhone(profileData?.phone || '');
 
         // Fetch user progress
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
-          .select('*, lessons(title)') // Select all from user_progress and lesson title from lessons table
+          .select('*, lessons(title)')
           .eq('user_id', user.id)
           .order('completed_at', { ascending: false });
 
         if (progressError) throw progressError;
         setUserProgress(progressData || []);
-
       } catch (error: any) {
         setError(error.message || 'Failed to fetch profile or progress.');
       } finally {
@@ -64,10 +72,87 @@ const Profile = () => {
     fetchProfileAndProgress();
   }, [user]);
 
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      if (!user) throw new Error('User not found.');
+      const { error } = await supabase
+        .from('profiles')
+        .update({ name, phone })
+        .eq('id', user.id);
+      if (error) throw error;
+      setEditMode(false);
+      setSuccess('Profile updated successfully!');
+      // Refetch profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id, email, name, phone')
+        .eq('id', user.id)
+        .single();
+      setProfile(profileData);
+    } catch (error: any) {
+      setError(error.message || 'Failed to update profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return <div>Loading profile...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!user) return <div>Please log in to view your profile.</div>;
   if (!profile) return <div>Profile not found.</div>;
+
+  // If name or phone is missing, show the form
+  if (!profile.name || !profile.phone || editMode) {
+    return (
+      <div className="container mt-5">
+        <div className="row justify-content-center">
+          <div className="col-md-7 col-lg-6">
+            <div className="card shadow-lg border-0">
+              <div className="card-body p-4">
+                <h2 className="card-title text-center mb-3">Complete Your Profile</h2>
+                <p className="text-center text-muted mb-4">To continue, please provide your full name and phone number. <span className='text-danger'>*</span> Required fields</p>
+                {error && <div className="alert alert-danger">{error}</div>}
+                {success && <div className="alert alert-success">{success}</div>}
+                <form onSubmit={handleSave} autoComplete="off">
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label fw-bold">Name <span className='text-danger'>*</span></label>
+                    <input
+                      type="text"
+                      className="form-control form-control-lg"
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="phone" className="form-label fw-bold">Phone <span className='text-danger'>*</span></label>
+                    <input
+                      type="tel"
+                      className="form-control form-control-lg"
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary w-100 mt-2" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Profile'}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-4">

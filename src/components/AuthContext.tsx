@@ -1,6 +1,8 @@
 
+'use client';
+
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from './supabaseClient'; // Assuming you have a supabaseClient.ts file
+import { supabase } from '../supabaseClient'; // Assuming you have a supabaseClient.ts file
 import { Session, User } from '@supabase/supabase-js';
 
 type AuthContextType = {
@@ -76,11 +78,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .single();
 
           if (profileError) {
-            console.error('Error fetching profile on auth change:', profileError);
-            setRole(null);
-            setCentreId(null);
-            setStreakCount(null);
-            setLastCompletedDate(null);
+            if (profileError.code === 'PGRST116') { // No rows found
+              await createUserProfile(currentUser);
+              setRole('student'); // Default role
+              setCentreId(null);
+              setStreakCount(0);
+              setLastCompletedDate(null);
+            } else {
+              console.error('Error fetching profile on auth change:', profileError);
+              setRole(null);
+              setCentreId(null);
+              setStreakCount(null);
+              setLastCompletedDate(null);
+            }
           } else {
             setRole(profileData?.role || null);
             setCentreId(profileData?.centre_id || null);
@@ -95,6 +105,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     );
+
+    const createUserProfile = async (user: User) => {
+      const { error } = await supabase
+        .from('profiles')
+        .insert([
+          { id: user.id, email: user.email, role: 'student' } // Default role for new users
+        ]);
+      if (error) {
+        console.error('Error creating user profile:', error);
+      }
+    };
 
     return () => {
       authListener.subscription.unsubscribe();

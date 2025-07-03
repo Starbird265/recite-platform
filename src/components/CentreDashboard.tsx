@@ -19,6 +19,8 @@ const CentreDashboard = () => {
   const [referrals, setReferrals] = useState<ExamRegistrationType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [earnings, setEarnings] = useState({ total: 0, pending: 0, paid: 0 });
+  const [referralStats, setReferralStats] = useState({ total: 0, paid: 0, unpaid: 0 });
 
   useEffect(() => {
     const fetchReferrals = async () => {
@@ -35,7 +37,18 @@ const CentreDashboard = () => {
           .order('registration_date', { ascending: false });
 
         if (error) throw error;
-        setReferrals(data || []);
+        // Fix: Map profiles to ensure email is a string, not array
+        const mapped = (data || []).map((r: any) => ({
+          ...r,
+          profiles: { email: Array.isArray(r.profiles) ? (r.profiles[0]?.email || 'N/A') : (r.profiles?.email || 'N/A') }
+        }));
+        setReferrals(mapped);
+
+        // Referral stats
+        const total = (data || []).length;
+        const paid = (data || []).filter((r: any) => r.payment_status === 'paid').length;
+        const unpaid = total - paid;
+        setReferralStats({ total, paid, unpaid });
       } catch (error: any) {
         setError(error.message || 'Failed to fetch referrals.');
       } finally {
@@ -43,7 +56,26 @@ const CentreDashboard = () => {
       }
     };
 
+    const fetchEarnings = async () => {
+      if (!centreId) return;
+      try {
+        // Fetch payouts for this centre
+        const { data, error } = await supabase
+          .from('payouts')
+          .select('amount, status')
+          .eq('centre_id', centreId);
+        if (error) throw error;
+        const total = (data || []).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+        const paid = (data || []).filter((p: any) => p.status === 'paid').reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+        const pending = total - paid;
+        setEarnings({ total, paid, pending });
+      } catch (error: any) {
+        // Ignore earnings error for now
+      }
+    };
+
     fetchReferrals();
+    fetchEarnings();
   }, [centreId]);
 
   const handleMarkNotified = async (registrationId: string) => {
@@ -117,6 +149,60 @@ const CentreDashboard = () => {
           ) : (
             <p>No student referrals at this time.</p>
           )}
+        </div>
+      </div>
+
+      {/* Earnings & Referral Stats */}
+      <div className="row mb-4">
+        <div className="col-md-4 mb-3">
+          <div className="card shadow-sm border-0">
+            <div className="card-body text-center">
+              <h5 className="card-title">Total Earnings</h5>
+              <p className="fs-4 text-success">₹{earnings.total}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4 mb-3">
+          <div className="card shadow-sm border-0">
+            <div className="card-body text-center">
+              <h5 className="card-title">Pending Payouts</h5>
+              <p className="fs-5 text-warning">₹{earnings.pending}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4 mb-3">
+          <div className="card shadow-sm border-0">
+            <div className="card-body text-center">
+              <h5 className="card-title">Paid Payouts</h5>
+              <p className="fs-5 text-primary">₹{earnings.paid}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="row mb-4">
+        <div className="col-md-4 mb-3">
+          <div className="card border-0 bg-light">
+            <div className="card-body text-center">
+              <h6 className="card-title">Total Referrals</h6>
+              <p className="fs-5">{referralStats.total}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4 mb-3">
+          <div className="card border-0 bg-light">
+            <div className="card-body text-center">
+              <h6 className="card-title">Paid Referrals</h6>
+              <p className="fs-5 text-success">{referralStats.paid}</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4 mb-3">
+          <div className="card border-0 bg-light">
+            <div className="card-body text-center">
+              <h6 className="card-title">Unpaid Referrals</h6>
+              <p className="fs-5 text-danger">{referralStats.unpaid}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

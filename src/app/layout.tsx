@@ -1,5 +1,5 @@
 
-import '../index.css'; // Keep global styles for now
+import '../../styles/globals.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { AuthProvider } from '../components/AuthContext';
 
