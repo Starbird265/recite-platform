@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import OpenAI from 'openai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+import { GoogleGenerativeAI } from '@google/generative-ai'
+
+const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 interface LessonRequest {
   topic: string
@@ -42,8 +41,12 @@ export default async function handler(
       return res.status(400).json({ message: 'Missing required fields' })
     }
 
-    // Generate lesson content
-    const lessonPrompt = `
+
+    // Use Gemini for lesson content
+    let lessonContent: string | undefined
+    let lesson: GeneratedLesson
+    {
+      const lessonPrompt = `
 Create a comprehensive RS-CIT lesson on "${topic}" for ${difficulty} level students.
 Module: ${module}
 Duration: ${duration} minutes
@@ -62,36 +65,16 @@ The lesson should include:
 
 Format the response as JSON with: title, description, content
 `
-
-    const lessonResponse = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert RS-CIT instructor creating engaging micro-lessons. Always respond with valid JSON only.'
-        },
-        {
-          role: 'user',
-          content: lessonPrompt
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.7,
-    })
-
-    const lessonContent = lessonResponse.choices[0]?.message?.content
-    if (!lessonContent) {
-      throw new Error('Failed to generate lesson content')
+      const model = gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
+      const geminiRes = await model.generateContent({ contents: [{ role: 'user', parts: [{ text: lessonPrompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 2000 } });
+      lessonContent = geminiRes.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!lessonContent) {
+        throw new Error('Failed to generate lesson content from Gemini');
+      }
+      lesson = JSON.parse(lessonContent);
     }
 
-    let lesson: GeneratedLesson
-    try {
-      lesson = JSON.parse(lessonContent)
-    } catch (error) {
-      throw new Error('Invalid JSON response from AI')
-    }
-
-    // Generate quiz if requested
+    // Generate quiz with Gemini if requested
     if (includeQuiz) {
       const quizPrompt = `
 Create 3-5 multiple choice questions for the RS-CIT lesson on "${topic}".
@@ -106,32 +89,22 @@ Questions should be practical and test understanding, not just memorization.
 
 Format as JSON array with: question, options, correct_answer, explanation
 `
-
-      const quizResponse = await openai.chat.completions.create({
-        model: 'gpt-4',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are creating RS-CIT quiz questions. Always respond with valid JSON only.'
-          },
-          {
-            role: 'user',
-            content: quizPrompt
+      try {
+        const model = gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
+        const geminiRes = await model.generateContent({ contents: [{ role: 'user', parts: [{ text: quizPrompt }] }], generationConfig: { temperature: 0.6, maxOutputTokens: 1500 } });
+        const quizContent = geminiRes.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (quizContent) {
+          try {
+            const questions = JSON.parse(quizContent)
+            lesson.quiz = { questions }
+          } catch (error) {
+            console.error('Error parsing quiz JSON from Gemini:', error)
+            // Continue without quiz if parsing fails
           }
-        ],
-        max_tokens: 1500,
-        temperature: 0.6,
-      })
-
-      const quizContent = quizResponse.choices[0]?.message?.content
-      if (quizContent) {
-        try {
-          const questions = JSON.parse(quizContent)
-          lesson.quiz = { questions }
-        } catch (error) {
-          console.error('Error parsing quiz JSON:', error)
-          // Continue without quiz if parsing fails
         }
+      } catch (error) {
+        console.error('Error generating quiz with Gemini:', error)
+        // Continue without quiz if Gemini fails
       }
     }
 

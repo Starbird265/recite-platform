@@ -1,0 +1,36 @@
+Environment Variables for Vercel Dashboard:
+
+1. NEXT_PUBLIC_SUPABASE_URL
+   Value: https://dqufxybntgydkkzhuntr.supabase.co
+   Environment: Production
+
+2. NEXT_PUBLIC_SUPABASE_ANON_KEY
+   Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxdWZ4eWJudGd5ZGtremh1bnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE1NjQ1OTAsImV4cCI6MjA2NzE0MDU5MH0.TJGk4EZKFS--PuIyTisqrKtNKbraxaIaAA-sHa3inY4
+   Environment: Production
+
+3. NEXT_PUBLIC_USE_FREE_APIS
+   Value: true
+   Environment: Production
+
+4. NODE_ENV
+   Value: production
+   Environment: Production
+
+5. NEXT_PUBLIC_YOUTUBE_DOMAIN
+   Value: rs-cit-platform-a0th9ymv2-gauravs-projects-38905d29.vercel.app
+   Environment: Production
+
+Instructions:
+1. Go to https://vercel.com/gauravs-projects-38905d29/rs-cit-platform
+2. Click "Settings" tab
+3. Click "Environment Variables" in the left sidebar
+4. For each variable above:
+   - Click "Add New"
+   - Enter the Name (e.g., NEXT_PUBLIC_SUPABASE_URL)
+   - Enter the Value
+   - Select "Production" environment
+   - Click "Save"
+5. After adding all variables, go to "Deployments" tab
+6. Click the three dots on the latest deployment and select "Redeploy"
+
+This should fix the environment variable issue and your platform will be live!

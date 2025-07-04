@@ -113,9 +113,9 @@ export default function CoursesPage() {
               <div key={course.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 {/* Course Thumbnail */}
                 <div className="relative h-48 bg-gradient-to-br from-rs-blue-500 to-rs-blue-700 flex items-center justify-center">
-                  {course.thumbnail_url ? (
+                  {course.image_url ? (
                     <Image 
-                      src={course.thumbnail_url} 
+                      src={course.image_url} 
                       alt={course.title}
                       layout="fill"
                       objectFit="cover"
@@ -144,7 +144,7 @@ export default function CoursesPage() {
                   <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
-                      {course.duration_hours}h
+                      {course.duration}h
                     </div>
                     <div className="flex items-center">
                       <Users className="h-4 w-4 mr-1" />

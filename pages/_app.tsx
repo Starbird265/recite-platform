@@ -2,8 +2,9 @@ import '../styles/globals.css'
 import '../styles/pixel-theme.css'
 import { AuthProvider } from '../contexts/AuthContext'
 import { Toaster } from 'react-hot-toast'
+import { AppProps } from 'next/app'
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <div className="pixel-bg"></div>

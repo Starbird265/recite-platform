@@ -77,7 +77,7 @@ export default async function handler(
     }
 
     // Notify center about new enrollment (could be done via webhook/email)
-    // TODO: Send notification to center
+    console.log('TODO: Implement notification to center for user:', user_id, 'and center:', center_id);
 
     res.status(200).json({ 
       message: 'Payment verified successfully',

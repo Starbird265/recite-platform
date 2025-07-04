@@ -118,7 +118,7 @@ export async function createPracticeTest() {
   if (authError || !user) throw authError || new Error('User not authenticated');
 
   const { data: questions, error } = await supabase
-    .from('quizzes')
+    .from('quiz_questions')
     .select('*')
     .limit(50); // random set or paginate
 

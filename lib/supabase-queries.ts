@@ -78,6 +78,22 @@ export const getVideos = async (moduleId?: string) => {
   return data
 }
 
+export const getQuizQuestions = async (quizId?: string) => {
+  let query = supabase
+    .from('quiz_questions')
+    .select('*')
+    .order('created_at', { ascending: true })
+
+  if (quizId) {
+    query = query.eq('quiz_id', quizId)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data
+}
+
 export const getQuizzes = async (moduleId?: string) => {
   let query = supabase
     .from('quizzes')
@@ -108,11 +124,30 @@ export const createVideo = async (videoData: {
   return data
 }
 
-export const createQuiz = async (quizData: {
+export const createQuizQuestion = async (quizQuestionData: {
   module_id: string
   question: string
   choices: string[]
   correct_index: number
+  quiz_id: string
+}) => {
+  const { data, error } = await supabase
+    .from('quiz_questions')
+    .insert([quizQuestionData])
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export const createQuiz = async (quizData: {
+  module_id: string
+  title: string
+  description?: string
+  difficulty?: string
+  duration_minutes?: number
+  num_questions?: number
+  passing_score?: number
 }) => {
   const { data, error } = await supabase
     .from('quizzes')
@@ -617,7 +652,7 @@ export const getRecentQuizAttempts = async (userId: string, limit: number = 5) =
         completed_at,
         quiz:quizzes(
           id,
-          module,
+          module_id,
           title
         )
       `)
@@ -630,7 +665,7 @@ export const getRecentQuizAttempts = async (userId: string, limit: number = 5) =
 
     return data?.map(attempt => ({
       id: attempt.id,
-      module: attempt.quiz?.module || 'Unknown Module',
+      module: attempt.quiz?.module_id || 'Unknown Module',
       score: attempt.score || 0,
       completedAt: attempt.completed_at
     })) || []

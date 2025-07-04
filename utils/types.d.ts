@@ -18,10 +18,10 @@ interface Video {
 
 interface QuizQuestion {
   id: string;
-  module_id: string;
   question_text: string;
   options: string[];
   correct_answer: string;
+  correct_index: number;
 }
 
 interface Question {

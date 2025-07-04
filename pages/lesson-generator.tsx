@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateLesson } from '../utils/supabase-helpers';
+// import { generateLesson } from '../utils/supabase-helpers';
 
 export default function LessonGenerator() {
   const [topic, setTopic] = useState('');
@@ -10,8 +10,8 @@ export default function LessonGenerator() {
     e.preventDefault();
     setLoading(true);
     try {
-      const text = await generateLesson(topic);
-      setScript(text);
+      // const text = await generateLesson(topic);
+      setScript(`Demo lesson for: ${topic}\n\nThis feature is coming soon! Your lesson will be generated using AI.`);
     } catch (error) {
       console.error(error);
       setScript('Error generating lesson.');

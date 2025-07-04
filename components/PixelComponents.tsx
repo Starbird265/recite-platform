@@ -133,6 +133,7 @@ interface PixelInputProps {
   dark?: boolean
   required?: boolean
   name?: string
+  maxLength?: number
 }
 
 export const PixelInput: React.FC<PixelInputProps> = ({
@@ -231,7 +232,7 @@ interface PixelStatsCardProps {
   title: string
   value: string | number
   subtitle?: string
-  icon: LucideIcon
+  icon: LucideIcon | (() => React.ReactNode)
   iconColor?: string
   trend?: 'up' | 'down' | 'neutral'
   className?: string

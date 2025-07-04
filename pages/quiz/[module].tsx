@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getQuizQuestions, submitQuizResult } from '../../utils/api';
+import { getQuizzes } from '../../lib/supabase-queries';
 import QuizQuestion from '../../components/QuizQuestion';
 import toast from 'react-hot-toast';
 
@@ -23,13 +24,23 @@ export default function QuizPage() {
   const [userAnswers, setUserAnswers] = useState<Record<string, string | null>>({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
+  const [quizTitle, setQuizTitle] = useState('Loading Quiz...');
+  const [moduleId, setModuleId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchQuizData = async () => {
       if (!quizId) return;
       try {
+        // Fetch quiz metadata
+        const quizMetadata = await getQuizzes(quizId as string);
+        if (quizMetadata && quizMetadata.length > 0) {
+          setQuizTitle(quizMetadata[0].title);
+          setModuleId(quizMetadata[0].module_id);
+        }
+
         const data = await getQuizQuestions(quizId as string);
-        setQuestions(data as QuizQuestionData[]);
+        setQuestions(data);
+        
         // Initialize user answers
         const initialAnswers: Record<string, string | null> = {};
         data.forEach((q: QuizQuestionData) => (initialAnswers[q.id] = null));
@@ -62,7 +73,7 @@ export default function QuizPage() {
     setScore(calculatedScore);
     setShowResults(true);
 
-    if (user) {
+    if (user && moduleId) {
       try {
         await submitQuizResult(moduleId as string, calculatedScore);
         toast.success('Quiz results submitted!');
@@ -106,10 +117,10 @@ export default function QuizPage() {
   return (
     <>
       <Head>
-        <title>Quiz: {moduleId} | RS-CIT Platform</title>
+        <title>Quiz: {quizTitle} | RS-CIT Platform</title>
       </Head>
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">Quiz: {moduleId}</h1>
+        <h1 className="text-3xl font-bold mb-6">Quiz: {quizTitle}</h1>
         {questions.map((q) => (
           <QuizQuestion
             key={q.id}

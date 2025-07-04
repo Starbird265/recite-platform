@@ -14,6 +14,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { getTodayLesson, getUserDashboardStats, getRecentQuizAttempts, getLearningStreak } from '../lib/supabase-queries'
 import toast from 'react-hot-toast'
+import { Trophy, Star } from 'lucide-react'
 
 interface DashboardData {
   totalModules: number
@@ -28,8 +29,9 @@ interface DashboardData {
     thumbnail: string
   } | null
   recentQuizzes: Array<{
-    id: number
+    id: string
     module: string
+    title: string
     score: number
     completedAt: string
   }>
@@ -93,25 +95,29 @@ const Dashboard = () => {
         recentQuizzes: recentQuizzes.length > 0 ? recentQuizzes.map(quiz => ({
           id: quiz.id,
           module: quiz.module,
+          title: quiz.title,
           score: quiz.score,
           completedAt: quiz.completedAt
         })) : [
           // Fallback mock data if no real quiz data
           {
-            id: 1,
+            id: "1",
             module: "MS Word Basics",
+            title: "MS Word Basics Quiz",
             score: 85,
             completedAt: "2024-01-15"
           },
           {
-            id: 2,
+            id: "2",
             module: "Internet Fundamentals", 
+            title: "Internet Fundamentals Quiz",
             score: 92,
             completedAt: "2024-01-14"
           },
           {
-            id: 3,
+            id: "3",
             module: "Computer Hardware",
+            title: "Computer Hardware Quiz",
             score: 78,
             completedAt: "2024-01-13"
           }
@@ -208,7 +214,7 @@ const Dashboard = () => {
               <PixelStats
                 title="Total Modules"
                 value={dashboardData.totalModules}
-                icon={() => <span className="text-2xl">📚</span>}
+                icon={Trophy}
                 iconColor="text-blue-400"
               />
               <PixelStats
@@ -222,13 +228,13 @@ const Dashboard = () => {
               <PixelStats
                 title="Current Streak"
                 value={`${dashboardData.currentStreak} days`}
-                icon={() => <span className="text-2xl">🔥</span>}
+                icon={Star}
                 iconColor="text-orange-400"
               />
               <PixelStats
                 title="Total Points"
                 value={dashboardData.totalPoints}
-                icon={() => <span className="text-2xl">⭐</span>}
+                icon={Star}
                 iconColor="text-yellow-400"
               />
             </PixelGrid>
@@ -326,7 +332,7 @@ const Dashboard = () => {
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="text-sm font-medium text-white">
-                              {quiz.module}
+                              {quiz.title}
                             </p>
                             <p className="text-xs text-gray-400">
                               {new Date(quiz.completedAt).toLocaleDateString()}

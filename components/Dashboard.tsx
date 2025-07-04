@@ -19,7 +19,7 @@ import {
   Plus,
   GraduationCap
 } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 import { supabase, Course, Lesson } from '@/lib/supabase'
 
 interface DashboardStats {
@@ -58,7 +58,7 @@ interface Achievement {
 }
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, logout } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     lessonsCompleted: 0,
     totalLessons: 132,
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 <Settings className="h-6 w-6" />
               </Link>
               <button
-                onClick={signOut}
+                onClick={async () => await logout()}
                 className="flex items-center text-gray-700 hover:text-gray-900"
               >
                 <LogOut className="h-5 w-5 mr-2" />
