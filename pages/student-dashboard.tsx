@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import { 
   PixelCard, 
@@ -12,7 +12,7 @@ import {
   PixelStats, 
   PixelSection, 
   PixelGrid 
-} from '@/components/ui/PixelComponents'
+} from '../components/PixelComponents'
 
 interface StudentProgress {
   totalLessons: number

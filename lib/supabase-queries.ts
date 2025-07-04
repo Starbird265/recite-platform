@@ -508,3 +508,211 @@ export const batchUpdateProgress = async (progressUpdates: any[]) => {
   if (error) throw error
   return data
 }
+
+// 🎯 Dashboard Specific Functions
+export const getTodayLesson = async (userId: string) => {
+  try {
+    // Get user's current progress to determine next lesson
+    const { data: progress, error: progressError } = await supabase
+      .from('student_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+
+    if (progressError) throw progressError
+
+    // Get the next lesson based on progress or first lesson if no progress
+    const { data: lesson, error: lessonError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('is_active', true)
+      .order('order_number', { ascending: true })
+      .limit(1)
+      .single()
+
+    if (lessonError && lessonError.code !== 'PGRST116') throw lessonError
+
+    return lesson
+  } catch (error) {
+    console.error('Error fetching today\'s lesson:', error)
+    return null
+  }
+}
+
+export const getUserDashboardStats = async (userId: string) => {
+  try {
+    // Get user's completed lessons
+    const { data: completedLessons, error: lessonsError } = await supabase
+      .from('user_progress')
+      .select('lesson_id')
+      .eq('user_id', userId)
+      .eq('completed', true)
+
+    if (lessonsError) throw lessonsError
+
+    // Get total lessons
+    const { count: totalLessons, error: countError } = await supabase
+      .from('lessons')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+
+    if (countError) throw countError
+
+    // Get user's quiz attempts
+    const { data: quizAttempts, error: quizError } = await supabase
+      .from('quiz_attempts')
+      .select('score, completed_at')
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false })
+      .limit(10)
+
+    if (quizError) throw quizError
+
+    // Calculate current streak (simplified)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const { data: recentActivity, error: activityError } = await supabase
+      .from('user_progress')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', yesterday.toISOString())
+
+    if (activityError) throw activityError
+
+    // Calculate points (100 points per completed lesson, bonus for quiz scores)
+    const lessonPoints = (completedLessons?.length || 0) * 100
+    const quizPoints = quizAttempts?.reduce((sum, attempt) => sum + (attempt.score || 0), 0) || 0
+    const totalPoints = lessonPoints + quizPoints
+
+    return {
+      totalModules: 132, // Fixed for RS-CIT course
+      completedModules: completedLessons?.length || 0,
+      currentStreak: recentActivity?.length || 0,
+      totalPoints,
+      recentQuizzes: quizAttempts?.slice(0, 5) || []
+    }
+  } catch (error) {
+    console.error('Error fetching user dashboard stats:', error)
+    return {
+      totalModules: 132,
+      completedModules: 0,
+      currentStreak: 0,
+      totalPoints: 0,
+      recentQuizzes: []
+    }
+  }
+}
+
+export const getRecentQuizAttempts = async (userId: string, limit: number = 5) => {
+  try {
+    const { data, error } = await supabase
+      .from('quiz_attempts')
+      .select(`
+        id,
+        score,
+        completed_at,
+        quiz:quizzes(
+          id,
+          module,
+          title
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false })
+      .limit(limit)
+
+    if (error) throw error
+
+    return data?.map(attempt => ({
+      id: attempt.id,
+      module: attempt.quiz?.module || 'Unknown Module',
+      score: attempt.score || 0,
+      completedAt: attempt.completed_at
+    })) || []
+  } catch (error) {
+    console.error('Error fetching recent quiz attempts:', error)
+    return []
+  }
+}
+
+export const getLearningStreak = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .eq('completed', true)
+      .order('completed_at', { ascending: false })
+
+    if (error) throw error
+
+    if (!data || data.length === 0) return 0
+
+    let streak = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Check if user has activity today or yesterday
+    const sortedDates = data.map(item => new Date(item.completed_at))
+    
+    for (let i = 0; i < sortedDates.length; i++) {
+      const activityDate = new Date(sortedDates[i])
+      activityDate.setHours(0, 0, 0, 0)
+      
+      const expectedDate = new Date(today)
+      expectedDate.setDate(expectedDate.getDate() - streak)
+      
+      if (activityDate.getTime() === expectedDate.getTime()) {
+        streak++
+      } else {
+        break
+      }
+    }
+
+    return streak
+  } catch (error) {
+    console.error('Error calculating learning streak:', error)
+    return 0
+  }
+}
+
+// Practice Test Specific Functions
+export const getUserPracticeTestStats = async (userId: string) => {
+  try {
+    const { data: attempts, error } = await supabase
+      .from('practice_test_attempts')
+      .select('*')
+      .eq('user_id', userId)
+
+    if (error) throw error
+
+    const totalAttempts = attempts?.length || 0
+    const completedTests = attempts?.filter(a => a.status === 'completed').length || 0
+    const scores = attempts?.filter(a => a.score !== null).map(a => a.score) || []
+    const averageScore = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0
+    const bestScore = scores.length > 0 ? Math.max(...scores) : 0
+    const totalTime = attempts?.reduce((sum, a) => sum + (a.time_taken_seconds || 0), 0) || 0
+
+    return {
+      totalAttempts,
+      completedTests,
+      averageScore,
+      bestScore,
+      timeSpent: Math.round(totalTime / 60) // Convert to minutes
+    }
+  } catch (error) {
+    console.error('Error fetching practice test stats:', error)
+    return {
+      totalAttempts: 0,
+      completedTests: 0,
+      averageScore: 0,
+      bestScore: 0,
+      timeSpent: 0
+    }
+  }
+}

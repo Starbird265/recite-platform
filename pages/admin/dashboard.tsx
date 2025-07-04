@@ -17,172 +17,121 @@ import {
   Download,
   Filter
 } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabaseClient'
 
 interface AdminStats {
-  totalUsers: number
-  totalCourses: number
-  totalLessons: number
-  totalCenters: number
-  totalRevenue: number
-  activeEnrollments: number
-  completionRate: number
-  averageScore: number
+  contentSummary: Array<{ content_type: string; status: string; count: number }>;
+  userSummary: { total_users: number };
+  referralSummary: Array<{ status: string; count: number }>;
 }
 
 interface RecentActivity {
-  id: string
-  type: 'enrollment' | 'completion' | 'payment' | 'center_signup'
-  user_name: string
-  description: string
-  amount?: number
-  timestamp: string
+  id: string;
+  type: 'enquiry' | 'referral';
+  user_email?: string;
+  centre_name?: string;
+  description: string;
+  timestamp: string;
 }
 
 export default function AdminDashboard() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 0,
-    totalCourses: 0,
-    totalLessons: 0,
-    totalCenters: 0,
-    totalRevenue: 0,
-    activeEnrollments: 0,
-    completionRate: 0,
-    averageScore: 0
-  })
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  const [loading, setLoading] = useState(true)
+    contentSummary: [],
+    userSummary: { total_users: 0 },
+    referralSummary: [],
+  });
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Note: In a real app, you'd check for admin privileges
   useEffect(() => {
-    if (user) {
-      fetchAdminStats()
-      fetchRecentActivity()
+    if (user && user.user_metadata.role === 'admin') {
+      fetchAdminData();
+    } else if (user) {
+      setLoading(false); // Not an admin, stop loading
     }
-  }, [user])
+  }, [user]);
 
-  const fetchAdminStats = async () => {
+  const fetchAdminData = async () => {
     try {
-      // Get users count
-      const { count: usersCount } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-
-      // Get courses count
-      const { count: coursesCount } = await supabase
-        .from('courses')
-        .select('*', { count: 'exact', head: true })
-
-      // Get lessons count
-      const { count: lessonsCount } = await supabase
-        .from('lessons')
-        .select('*', { count: 'exact', head: true })
-
-      // Get centers count
-      const { count: centersCount } = await supabase
-        .from('centers')
-        .select('*', { count: 'exact', head: true })
-
-      // Get revenue sum
-      const { data: paymentsData } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('status', 'completed')
-
-      const totalRevenue = paymentsData?.reduce((sum, payment) => sum + payment.amount, 0) || 0
-
-      // Get active enrollments
-      const { count: enrollmentsCount } = await supabase
-        .from('enrollments')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active')
-
-      // Get completion rate
-      const { data: progressData } = await supabase
-        .from('user_progress')
-        .select('completed, score')
-
-      const completedCount = progressData?.filter(p => p.completed).length || 0
-      const totalProgressCount = progressData?.length || 1
-      const completionRate = Math.round((completedCount / totalProgressCount) * 100)
-
-      const averageScore = progressData && progressData.length > 0 
-        ? Math.round(progressData.reduce((sum, p) => sum + (p.score || 0), 0) / progressData.length)
-        : 0
-
-      setStats({
-        totalUsers: usersCount || 0,
-        totalCourses: coursesCount || 0,
-        totalLessons: lessonsCount || 0,
-        totalCenters: centersCount || 0,
-        totalRevenue,
-        activeEnrollments: enrollmentsCount || 0,
-        completionRate,
-        averageScore
-      })
-    } catch (error) {
-      console.error('Error fetching admin stats:', error)
-    }
-  }
-
-  const fetchRecentActivity = async () => {
-    try {
-      // This would be a more complex query in a real app
-      // For now, we'll simulate recent activity
-      const mockActivity: RecentActivity[] = [
-        {
-          id: '1',
-          type: 'enrollment',
-          user_name: 'John Doe',
-          description: 'Enrolled in RS-CIT Fundamentals',
-          timestamp: new Date().toISOString()
+      const response = await fetch('/api/admin/dashboard', {
+        headers: {
+          Authorization: `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}`,
         },
-        {
-          id: '2',
-          type: 'payment',
-          user_name: 'Jane Smith',
-          description: 'Payment completed for EMI plan',
-          amount: 783,
-          timestamp: new Date(Date.now() - 3600000).toISOString()
-        },
-        {
-          id: '3',
-          type: 'completion',
-          user_name: 'Mike Johnson',
-          description: 'Completed Introduction to Computers',
-          timestamp: new Date(Date.now() - 7200000).toISOString()
-        }
-      ]
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setStats(data);
 
-      setRecentActivity(mockActivity)
+      // Fetch recent enquiries and referrals for activity feed
+      const { data: enquiries, error: enquiriesError } = await supabase
+        .from('enquiries')
+        .select('id, email, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { data: referrals, error: referralsError } = await supabase
+        .from('referrals')
+        .select('id, user_id, centre_id, created_at, status, centres(name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (enquiriesError) console.error('Error fetching enquiries:', enquiriesError);
+      if (referralsError) console.error('Error fetching referrals:', referralsError);
+
+      const combinedActivity: RecentActivity[] = [];
+
+      enquiries?.forEach(enq => {
+        combinedActivity.push({
+          id: enq.id,
+          type: 'enquiry',
+          user_email: enq.email,
+          description: `New enquiry from ${enq.email}`,
+          timestamp: enq.created_at,
+        });
+      });
+
+      referrals?.forEach(ref => {
+        combinedActivity.push({
+          id: ref.id,
+          type: 'referral',
+          centre_name: ref.centres?.name || 'Unknown Centre',
+          description: `New referral to ${ref.centres?.name || 'Unknown Centre'} (Status: ${ref.status})`,
+          timestamp: ref.created_at,
+        });
+      });
+
+      // Sort by timestamp and take top N
+      setRecentActivity(combinedActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5));
+
     } catch (error) {
-      console.error('Error fetching recent activity:', error)
+      console.error('Error fetching admin data:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'enrollment': return <Users className="h-4 w-4 text-blue-500" />
-      case 'payment': return <DollarSign className="h-4 w-4 text-green-500" />
-      case 'completion': return <CheckCircle className="h-4 w-4 text-purple-500" />
-      case 'center_signup': return <MapPin className="h-4 w-4 text-orange-500" />
-      default: return <AlertCircle className="h-4 w-4 text-gray-500" />
+      case 'enquiry': return <Users className="h-4 w-4 text-blue-500" />;
+      case 'referral': return <MapPin className="h-4 w-4 text-orange-500" />;
+      default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
-  }
+  };
 
-  if (!user) {
+  if (!user || user.user_metadata.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-          <p className="text-gray-600">Please sign in to access the admin dashboard</p>
+          <p className="text-gray-600">You do not have administrative privileges to view this page.</p>
+          <Link href="/" className="text-blue-600 hover:underline mt-4 block">Go to Home</Link>
         </div>
       </div>
-    )
+    );
   }
 
   if (loading) {
@@ -190,8 +139,13 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-rs-blue-600"></div>
       </div>
-    )
+    );
   }
+
+  // Helper to get count for a specific content type and status
+  const getContentCount = (contentType: string, status: string) => {
+    return stats.contentSummary.find(s => s.content_type === contentType && s.status === status)?.count || 0;
+  };
 
   return (
     <>
@@ -247,7 +201,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.userSummary.total_users}</p>
                 </div>
               </div>
             </div>
@@ -258,8 +212,8 @@ export default function AdminDashboard() {
                   <BookOpen className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Courses</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalCourses}</p>
+                  <p className="text-sm text-gray-600">Approved Videos</p>
+                  <p className="text-2xl font-bold text-gray-900">{getContentCount('videos', 'approved')}</p>
                 </div>
               </div>
             </div>
@@ -270,8 +224,8 @@ export default function AdminDashboard() {
                   <MapPin className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Centers</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalCenters}</p>
+                  <p className="text-sm text-gray-600">Pending Quizzes</p>
+                  <p className="text-2xl font-bold text-gray-900">{getContentCount('quizzes', 'pending')}</p>
                 </div>
               </div>
             </div>
@@ -282,20 +236,20 @@ export default function AdminDashboard() {
                   <DollarSign className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-sm text-gray-600">Paid Referrals</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.referralSummary.find(s => s.status === 'paid')?.count || 0}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Secondary Stats */}
+          {/* Secondary Stats - Example of using contentSummary */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active Enrollments</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.activeEnrollments}</p>
+                  <p className="text-sm text-gray-600">Pending Questions</p>
+                  <p className="text-xl font-bold text-gray-900">{getContentCount('questions', 'pending')}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-500" />
               </div>
@@ -304,8 +258,8 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Completion Rate</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.completionRate}%</p>
+                  <p className="text-sm text-gray-600">Approved Answers</p>
+                  <p className="text-xl font-bold text-gray-900">{getContentCount('answers', 'approved')}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-blue-500" />
               </div>
@@ -314,8 +268,8 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Average Score</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.averageScore}%</p>
+                  <p className="text-sm text-gray-600">Total Enquiries</p>
+                  <p className="text-xl font-bold text-gray-900">{stats.contentSummary.find(s => s.content_type === 'enquiries')?.count || 0}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-500" />
               </div>
@@ -324,8 +278,8 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Lessons</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.totalLessons}</p>
+                  <p className="text-sm text-gray-600">Total Referrals</p>
+                  <p className="text-xl font-bold text-gray-900">{stats.referralSummary.reduce((sum, s) => sum + s.count, 0)}</p>
                 </div>
                 <BookOpen className="h-8 w-8 text-orange-500" />
               </div>
@@ -350,18 +304,13 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-900 truncate">
-                          <span className="font-medium">{activity.user_name}</span> {activity.description}
+                          <span className="font-medium">{activity.user_email || activity.centre_name}</span> {activity.description}
                         </p>
                         <p className="text-xs text-gray-500">
                           {new Date(activity.timestamp).toLocaleDateString()} at{' '}
                           {new Date(activity.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
-                      {activity.amount && (
-                        <div className="flex-shrink-0 text-sm font-medium text-green-600">
-                          ₹{activity.amount}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -374,22 +323,22 @@ export default function AdminDashboard() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <Link
-                    href="/create-course"
+                    href="/admin/content-management/videos/create"
                     className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-rs-blue-500 hover:bg-rs-blue-50 transition-colors"
                   >
                     <div className="text-center">
                       <Plus className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-gray-900">Create Course</p>
+                      <p className="text-sm font-medium text-gray-900">Create Video</p>
                     </div>
                   </Link>
 
                   <Link
-                    href="/create-lesson"
+                    href="/admin/content-management/quizzes/create"
                     className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-rs-blue-500 hover:bg-rs-blue-50 transition-colors"
                   >
                     <div className="text-center">
                       <Plus className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-gray-900">Create Lesson</p>
+                      <p className="text-sm font-medium text-gray-900">Create Quiz</p>
                     </div>
                   </Link>
 
@@ -400,12 +349,15 @@ export default function AdminDashboard() {
                     </div>
                   </button>
 
-                  <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                  <Link
+                    href="/analytics"
+                    className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+                  >
                     <div className="text-center">
                       <TrendingUp className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm font-medium text-gray-900">Analytics</p>
                     </div>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -413,5 +365,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </>
-  )
+  );
 }

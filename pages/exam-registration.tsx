@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { Calendar, MapPin, Clock, User, Phone, Mail, CheckCircle, AlertCircle, Download, FileText, Camera, Upload } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 interface ExamSlot {
@@ -62,6 +62,68 @@ export default function ExamRegistrationPage() {
   })
 
   useEffect(() => {
+    const checkEligibilityAndFetchData = async () => {
+      if (!user) return
+  
+      try {
+        setLoading(true)
+  
+        // Check if user has active enrollment
+        const { data: enrollmentData, error: enrollmentError } = await supabase
+          .from('enrollments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .single()
+  
+        if (enrollmentError || !enrollmentData) {
+          setError('You need to enroll in a course before registering for the exam. Please visit the payment page to enroll.')
+          return
+        }
+  
+        setEnrollment(enrollmentData)
+  
+        // Check if already registered for exam
+        if (enrollmentData.exam_date) {
+          setStep(4) // Already registered
+          setRegistrationId(`RSCIT${new Date().getFullYear()}${Math.random().toString().slice(2, 8)}`)
+          return
+        }
+  
+        // Fetch user profile data
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+  
+        if (userData) {
+          setFormData({
+            name: userData.name || '',
+            phone: userData.phone || '',
+            email: userData.email || '',
+            father_name: userData.father_name || '',
+            mother_name: userData.mother_name || '',
+            date_of_birth: userData.date_of_birth || '',
+            gender: userData.gender || '',
+            category: userData.category || '',
+            address: userData.address || '',
+            id_proof_type: '',
+            id_proof_number: ''
+          })
+        }
+  
+        // Fetch available exam slots
+        await fetchExamSlots(enrollmentData.center_id)
+  
+      } catch (error) {
+        console.error('Error checking eligibility:', error)
+        setError('Failed to check exam eligibility.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (user) {
       checkEligibilityAndFetchData()
     }
@@ -575,25 +637,25 @@ export default function ExamRegistrationPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Father's Name *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Father&apos;s Name *</label>
                       <input
                         type="text"
                         name="father_name"
                         value={formData.father_name}
                         onChange={handleFormChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rs-blue-500 focus:border-transparent"
-                        placeholder="Enter father's name"
+                        placeholder="Enter father&apos;s name"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Mother's Name *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Mother&apos;s Name *</label>
                       <input
                         type="text"
                         name="mother_name"
                         value={formData.mother_name}
                         onChange={handleFormChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rs-blue-500 focus:border-transparent"
-                        placeholder="Enter mother's name"
+                        placeholder="Enter mother&apos;s name"
                       />
                     </div>
                     <div>

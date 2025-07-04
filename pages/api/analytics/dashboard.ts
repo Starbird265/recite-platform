@@ -104,22 +104,22 @@ export default async function handler(
 
     // Generate learning progress by module
     const moduleStats = progressData?.reduce((acc: Record<string, { total: number; completed: number; scores: number[] }>, progress: any) => {
-      const module = progress.lessons?.module || 'Unknown'
-      if (!acc[module]) {
-        acc[module] = { total: 0, completed: 0, scores: [] }
+      const moduleName = progress.lessons?.module || 'Unknown'
+      if (!acc[moduleName]) {
+        acc[moduleName] = { total: 0, completed: 0, scores: [] }
       }
-      acc[module].total++
+      acc[moduleName].total++
       if (progress.completed) {
-        acc[module].completed++
+        acc[moduleName].completed++
         if (progress.score) {
-          acc[module].scores.push(progress.score)
+          acc[moduleName].scores.push(progress.score)
         }
       }
       return acc
     }, {}) || {}
 
-    const learningProgress = Object.entries(moduleStats).map(([module, stats]) => ({
-      module,
+    const learningProgress = Object.entries(moduleStats).map(([moduleName, stats]) => ({
+      module: moduleName,
       completionRate: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0,
       averageScore: stats.scores.length > 0 
         ? Math.round(stats.scores.reduce((sum, score) => sum + score, 0) / stats.scores.length)

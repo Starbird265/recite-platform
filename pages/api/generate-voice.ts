@@ -1,12 +1,15 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).end('Method Not Allowed');
   }
+  
+  // Temporarily disabled for deployment
+  return res.status(503).json({ error: 'Voice generation service temporarily unavailable' });
 
   const { text } = req.body;
 

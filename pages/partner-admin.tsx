@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import { 
   PixelCard, 
@@ -9,7 +9,7 @@ import {
   PixelIcon, 
   PixelTitle, 
   PixelGrid 
-} from '@/components/ui/PixelComponents'
+} from '../components/PixelComponents'
 
 interface Partner {
   id: string

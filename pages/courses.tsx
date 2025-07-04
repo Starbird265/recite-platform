@@ -1,9 +1,23 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import Image from 'next/image'
 import { BookOpen, Clock, Star, Users, Play, ArrowRight } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
-import { supabase, Course } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabaseClient'
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  difficulty: string;
+  price: number;
+  image_url: string;
+  instructor: string;
+  rating: number;
+  students: number;
+}
 
 export default function CoursesPage() {
   const { user } = useAuth()
@@ -98,12 +112,13 @@ export default function CoursesPage() {
             {filteredCourses.map((course) => (
               <div key={course.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 {/* Course Thumbnail */}
-                <div className="h-48 bg-gradient-to-br from-rs-blue-500 to-rs-blue-700 flex items-center justify-center">
+                <div className="relative h-48 bg-gradient-to-br from-rs-blue-500 to-rs-blue-700 flex items-center justify-center">
                   {course.thumbnail_url ? (
-                    <img 
+                    <Image 
                       src={course.thumbnail_url} 
                       alt={course.title}
-                      className="w-full h-full object-cover"
+                      layout="fill"
+                      objectFit="cover"
                     />
                   ) : (
                     <BookOpen className="h-16 w-16 text-white" />

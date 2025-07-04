@@ -25,8 +25,8 @@ import {
   Search,
   RefreshCw
 } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabaseClient'
 import toast from 'react-hot-toast'
 
 interface PartnerStats {
@@ -102,6 +102,125 @@ export default function PartnersDashboard() {
   const [filterStatus, setFilterStatus] = useState('all')
 
   useEffect(() => {
+    const fetchPartnerData = async () => {
+      if (!user) return
+  
+      try {
+        setLoading(true)
+        
+        // Get center details
+        const { data: centerData, error: centerError } = await supabase
+          .from('centers')
+          .select('*')
+          .eq('email', user.email)
+          .single()
+  
+        if (centerError) {
+          toast.error('Center not found. Please contact support.')
+          return
+        }
+  
+        setCenterDetails(centerData)
+  
+        // Get students referred by this center
+        const { data: enrollmentData, error: enrollmentError } = await supabase
+          .from('enrollments')
+          .select(`
+            *,
+            users (
+              id,
+              name,
+              email,
+              phone
+            ),
+            user_progress (
+              completed,
+              lessons (
+                id
+              )
+            )
+          `)
+          .eq('center_id', centerData.id)
+  
+        if (enrollmentError) throw enrollmentError
+  
+        // Process student data
+        const studentData: Student[] = enrollmentData?.map(enrollment => {
+          const completedLessons = enrollment.user_progress?.filter((p: any) => p.completed).length || 0
+          const totalLessons = enrollment.user_progress?.length || 1
+          const progress = Math.round((completedLessons / totalLessons) * 100)
+  
+          return {
+            id: enrollment.users.id,
+            name: enrollment.users.name,
+            email: enrollment.users.email,
+            phone: enrollment.users.phone,
+            enrolled_at: enrollment.created_at,
+            course_progress: progress,
+            payment_status: enrollment.payment_status,
+            emi_plan: enrollment.emi_plan,
+            amount_paid: enrollment.amount_paid || 0,
+            next_payment_date: enrollment.next_payment_date
+          }
+        }) || []
+  
+        setStudents(studentData)
+  
+        // Calculate statistics
+        const activeEnrollments = studentData.filter(s => s.payment_status === 'completed').length
+        const completedStudents = studentData.filter(s => s.course_progress >= 80).length
+        const totalEarnings = studentData.reduce((sum, s) => sum + (s.amount_paid * 0.075), 0) // 7.5% commission
+        const thisMonthEnrollments = studentData.filter(s => 
+          new Date(s.enrolled_at).getMonth() === new Date().getMonth()
+        ).length
+  
+        // Mock additional data for demo
+        const mockStats: PartnerStats = {
+          totalStudents: studentData.length,
+          activeEnrollments,
+          completedStudents,
+          totalEarnings,
+          monthlyEarnings: totalEarnings * 0.3, // Mock monthly earnings
+          referralCommissions: totalEarnings * 0.6,
+          avgRating: centerData.rating || 4.2,
+          totalReferrals: studentData.length,
+          pendingPayouts: totalEarnings * 0.2,
+          thisMonthEnrollments
+        }
+  
+        setStats(mockStats)
+  
+        // Mock payout data
+        const mockPayouts: Payout[] = [
+          {
+            id: '1',
+            amount: 350,
+            commission_type: 'referral',
+            student_name: 'John Doe',
+            status: 'pending',
+            created_at: new Date().toISOString()
+          },
+          {
+            id: '2',
+            amount: 500,
+            commission_type: 'completion_bonus',
+            student_name: 'Jane Smith',
+            status: 'paid',
+            created_at: new Date(Date.now() - 86400000).toISOString(),
+            processed_at: new Date().toISOString()
+          }
+        ]
+  
+        setPayouts(mockPayouts)
+  
+      } catch (error) {
+        console.error('Error fetching partner data:', error)
+        toast.error('Failed to load partner dashboard')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (user) {
       fetchPartnerData()
     }

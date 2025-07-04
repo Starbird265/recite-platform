@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import { 
   PixelCard, 
@@ -10,7 +10,7 @@ import {
   PixelIcon, 
   PixelSection, 
   PixelGrid 
-} from '@/components/ui/PixelComponents'
+} from '../components/PixelComponents'
 
 interface PaymentPlan {
   id: string

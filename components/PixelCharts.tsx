@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { PixelCard, PixelIcon } from './ui/PixelComponents'
+import { PixelCard, PixelIcon } from './PixelComponents'
 
 // 📊 Simple Progress Chart Component
 interface ProgressChartProps {

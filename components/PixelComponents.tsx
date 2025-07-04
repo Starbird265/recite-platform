@@ -484,3 +484,74 @@ export const PixelBackground: React.FC<PixelBackgroundProps> = ({
     </div>
   )
 }
+
+// 🎯 Pixel Icon Component
+interface PixelIconProps {
+  icon?: LucideIcon
+  size?: 'sm' | 'md' | 'lg'
+  color?: string
+  className?: string
+  children?: React.ReactNode
+}
+
+export const PixelIcon: React.FC<PixelIconProps> = ({
+  icon: Icon,
+  size = 'md',
+  color = 'text-cyan-400',
+  className = '',
+  children
+}) => {
+  const sizeClass = {
+    sm: 'text-lg',
+    md: 'text-2xl',
+    lg: 'text-4xl'
+  }[size]
+
+  // If children (emoji/text) is provided, render that
+  if (children) {
+    return (
+      <span className={`${sizeClass} ${color} ${className}`}>
+        {children}
+      </span>
+    )
+  }
+
+  // Otherwise render the Lucide icon
+  if (Icon) {
+    const iconSizeClass = {
+      sm: 'h-4 w-4',
+      md: 'h-6 w-6',
+      lg: 'h-8 w-8'
+    }[size]
+
+    return (
+      <Icon className={`${iconSizeClass} ${color} ${className}`} />
+    )
+  }
+
+  return null
+}
+
+// 🎯 Pixel Section Component
+interface PixelSectionProps {
+  children: React.ReactNode
+  className?: string
+  dark?: boolean
+}
+
+export const PixelSection: React.FC<PixelSectionProps> = ({
+  children,
+  className = '',
+  dark = false
+}) => {
+  const baseClass = dark ? 'pixel-section-dark' : 'pixel-section'
+  
+  return (
+    <section className={`${baseClass} ${className}`}>
+      {children}
+    </section>
+  )
+}
+
+// 🎯 Pixel Stats Component (alias for PixelStatsCard)
+export const PixelStats = PixelStatsCard

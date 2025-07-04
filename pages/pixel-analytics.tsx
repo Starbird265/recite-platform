@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import { 
   PixelCard, 
   PixelButton, 
@@ -9,7 +9,7 @@ import {
   PixelSection, 
   PixelStats,
   PixelGrid 
-} from '@/components/ui/PixelComponents'
+} from '../components/PixelComponents'
 import {
   PixelAnalyticsDashboard,
   PixelProgressChart,
@@ -17,7 +17,7 @@ import {
   PixelDonutChart,
   PixelMap,
   PixelMobileChart
-} from '@/components/PixelCharts'
+} from '../components/PixelCharts'
 
 const PixelAnalytics = () => {
   const { user } = useAuth()

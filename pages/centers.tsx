@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { MapPin, Phone, Mail, Star, Filter, List, Map } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 
 interface Center {
   id: string
@@ -37,6 +37,22 @@ export default function CentersPage() {
   }, [])
 
   useEffect(() => {
+    const applyFilters = () => {
+      let filtered = centers
+  
+      if (filters.city) {
+        filtered = filtered.filter(center => 
+          center.city.toLowerCase().includes(filters.city.toLowerCase())
+        )
+      }
+  
+      filtered = filtered.filter(center => 
+        center.fees <= filters.maxFees && center.rating >= filters.minRating
+      )
+  
+      setFilteredCenters(filtered)
+    }
+
     applyFilters()
   }, [centers, filters])
 

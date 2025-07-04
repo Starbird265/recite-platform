@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import { 
   PixelCard, 
   PixelButton, 
@@ -10,7 +10,7 @@ import {
   PixelStats, 
   PixelSection, 
   PixelGrid 
-} from '@/components/ui/PixelComponents'
+} from '../components/PixelComponents'
 
 interface PartnerStats {
   totalStudents: number

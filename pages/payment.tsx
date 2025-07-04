@@ -26,8 +26,8 @@ import {
   Heart,
   Timer
 } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import {
   PixelButton,
@@ -43,7 +43,7 @@ import {
   PixelBackground,
   PixelAlert,
   PixelProgress
-} from '@/components/PixelComponents'
+} from '../components/PixelComponents'
 
 interface PaymentPlan {
   id: number
@@ -130,6 +130,62 @@ export default function PaymentPage() {
   ]
 
   useEffect(() => {
+    const fetchCenters = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('centers')
+          .select('*')
+          .eq('verified', true)
+          .eq('city', 'bharatpur')
+          .order('rating', { ascending: false })
+  
+        if (error) throw error
+  
+        const centersData = data || [
+          {
+            id: '1',
+            name: 'Digital Warriors Academy',
+            city: 'bharatpur',
+            address: 'Main Market, Bharatpur - The Battle Arena',
+            fees: 4699,
+            rating: 4.8,
+            distance: 2.5,
+            verified: true,
+            specialties: ['Gaming Setup', 'AI Labs', 'VR Training']
+          },
+          {
+            id: '2',
+            name: 'Pixel Perfect Learning Hub',
+            city: 'bharatpur',
+            address: 'Civil Lines, Bharatpur - Tech Fortress',
+            fees: 4699,
+            rating: 4.6,
+            distance: 3.2,
+            verified: true,
+            specialties: ['Retro Gaming', 'Code Academy', 'Digital Art']
+          },
+          {
+            id: '3',
+            name: 'Cyber Skills Training Center',
+            city: 'bharatpur',
+            address: 'Kaman Area, Bharatpur - Command Center',
+            fees: 4699,
+            rating: 4.7,
+            distance: 1.8,
+            verified: true,
+            specialties: ['Hacker Mode', 'Speed Coding', 'Tech Wizardry']
+          }
+        ]
+  
+        setCenters(centersData)
+        if (centersData.length > 0) {
+          setSelectedCenter(centersData[0].id)
+        }
+      } catch (error) {
+        console.error('Error fetching training centers:', error)
+      }
+    }
+
     fetchCenters()
     
     // Pre-fill form if user is logged in
@@ -153,7 +209,7 @@ export default function PaymentPage() {
 
     // Update progress based on step
     setProgress(step * 33.33)
-  }, [user, router.query.plan, step])
+  }, [user, router.query.plan, step, plans])
 
   const fetchCenters = async () => {
     try {
@@ -466,7 +522,7 @@ export default function PaymentPage() {
                     🏰 SELECT TRAINING CENTER
                   </PixelHeader>
                   <PixelBody className="text-gray-400 max-w-2xl mx-auto">
-                    Choose your training ground where you'll practice hands-on skills with expert mentors
+                    Choose your training ground where you&apos;ll practice hands-on skills with expert mentors
                   </PixelBody>
                 </div>
 

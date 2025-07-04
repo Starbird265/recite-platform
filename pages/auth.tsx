@@ -1,267 +1,223 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 import { 
   PixelCard, 
   PixelButton, 
-  PixelIcon, 
-  PixelSection 
-} from '@/components/ui/PixelComponents'
+  PixelInput,
+  PixelTitle,
+  PixelSection
+} from '../components/PixelComponents'
+import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
 const AuthPage = () => {
+  const [email, setEmail] = useState('')
+  const [otp, setOtp] = useState('')
+  const [isOtpSent, setIsOtpSent] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [resendTimer, setResendTimer] = useState(0)
+  const { user } = useAuth()
   const router = useRouter()
-  const [isLogin, setIsLogin] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    phone: '',
-    city: ''
-  })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user, router])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [resendTimer])
+
+  const { signInWithOtp, verifyOtp } = useAuth()
+
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    if (!email) {
+      toast.error('Please enter your email address')
+      return
+    }
 
+    setIsLoading(true)
     try {
-      if (isLogin) {
-        // Login
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        })
+      await signInWithOtp(email)
 
-        if (error) throw error
-
-        toast.success('✅ Login successful!')
-        router.push('/')
-      } else {
-        // Register
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-        })
-
-        if (error) throw error
-
-        if (data.user) {
-          // Create user profile
-          const { error: profileError } = await supabase
-            .from('users')
-            .insert([
-              {
-                id: data.user.id,
-                email: formData.email,
-                name: formData.name,
-                phone: formData.phone || null,
-                city: formData.city || null,
-              }
-            ])
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError)
-          }
-        }
-
-        toast.success('🎉 Registration successful!')
-        router.push('/')
-      }
+      setIsOtpSent(true)
+      setResendTimer(60) // 60 second countdown
+      toast.success('OTP sent to your email!')
     } catch (error: any) {
-      console.error('Auth error:', error)
-      toast.error(error.message || 'Authentication failed')
+      console.error('OTP send error:', error)
+      toast.error(error.message || 'Failed to send OTP')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const handleDemoLogin = async () => {
-    setLoading(true)
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!otp) {
+      toast.error('Please enter the OTP')
+      return
+    }
+
+    setIsLoading(true)
     try {
-      // Demo login with predefined credentials
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'demo@rscit.com',
-        password: 'demo123456',
-      })
+      await verifyOtp(email, otp)
 
-      if (error) {
-        // If demo user doesn't exist, create one
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: 'demo@rscit.com',
-          password: 'demo123456',
-        })
-
-        if (signUpError) throw signUpError
-
-        if (signUpData.user) {
-          await supabase
-            .from('users')
-            .insert([
-              {
-                id: signUpData.user.id,
-                email: 'demo@rscit.com',
-                name: 'Demo User',
-                phone: '+91 98765 43210',
-                city: 'Jaipur',
-              }
-            ])
-        }
-      }
-
-      toast.success('🎯 Demo login successful!')
-      router.push('/')
+      toast.success('Successfully logged in!')
+      router.push('/dashboard')
     } catch (error: any) {
-      console.error('Demo login error:', error)
-      toast.error('Demo login failed. Please try manual login.')
+      console.error('OTP verification error:', error)
+      toast.error(error.message || 'Invalid OTP')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
+    }
+  }
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return
+    
+    setIsLoading(true)
+    try {
+      await signInWithOtp(email)
+
+      setResendTimer(60)
+      toast.success('OTP resent to your email!')
+    } catch (error: any) {
+      console.error('OTP resend error:', error)
+      toast.error(error.message || 'Failed to resend OTP')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
     <>
       <Head>
-        <title>🔐 Sign In | RS-CIT Platform</title>
-        <meta name="description" content="Sign in to your RS-CIT learning account" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Sign In - RS-CIT Platform</title>
+        <meta name="description" content="Sign in to access your RS-CIT learning dashboard" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
-        <PixelSection className="w-full max-w-md">
-          <PixelCard>
-            <div className="text-center mb-8">
-              <PixelIcon size="lg" color="primary">🎨</PixelIcon>
-              <h1 className="text-2xl font-bold pixel-text-gray-800 mt-4 mb-2">
-                {isLogin ? 'Welcome Back!' : 'Join RS-CIT'}
-              </h1>
-              <p className="pixel-text-gray-600">
-                {isLogin ? 'Sign in to continue your learning journey' : 'Create your account to get started'}
-              </p>
-            </div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <PixelSection className="text-center mb-8">
+            <PixelTitle className="text-white mb-2">
+              🎓 RS-CIT Platform
+            </PixelTitle>
+            <p className="text-gray-400">
+              {isOtpSent ? 'Enter the OTP sent to your email' : 'Sign in to continue learning'}
+            </p>
+          </PixelSection>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium pixel-text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+          <PixelCard className="p-6">
+            {!isOtpSent ? (
+              // Email Input Form
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <PixelInput
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    dark
+                    className="w-full"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium pixel-text-gray-700 mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
+                <PixelButton 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Sending...' : 'Send OTP'}
+                </PixelButton>
+              </form>
+            ) : (
+              // OTP Verification Form
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Enter OTP
+                  </label>
+                  <PixelInput
+                    type="text"
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    dark
+                    className="w-full text-center text-2xl tracking-widest"
+                    maxLength={6}
+                    required
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    OTP sent to: {email}
+                  </p>
+                </div>
 
-              {!isLogin && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium pixel-text-gray-700 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Enter your full name"
-                      required
-                    />
-                  </div>
+                <PixelButton 
+                  type="submit" 
+                  className="w-full mb-3" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                </PixelButton>
 
-                  <div>
-                    <label className="block text-sm font-medium pixel-text-gray-700 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
+                <div className="flex justify-between items-center">
+                  <PixelButton 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsOtpSent(false)}
+                    disabled={isLoading}
+                  >
+                    Change Email
+                  </PixelButton>
 
-                  <div>
-                    <label className="block text-sm font-medium pixel-text-gray-700 mb-2">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Enter your city"
-                    />
-                  </div>
-                </>
-              )}
+                  <PixelButton 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleResendOtp}
+                    disabled={isLoading || resendTimer > 0}
+                  >
+                    {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
+                  </PixelButton>
+                </div>
+              </form>
+            )}
 
-              <PixelButton
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? '⏳ Processing...' : isLogin ? '🚀 Sign In' : '🎉 Create Account'}
-              </PixelButton>
-            </form>
-
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
-              >
-                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-              </button>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <PixelButton
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleDemoLogin}
-                disabled={loading}
-              >
-                🎯 Try Demo Login
-              </PixelButton>
-              <p className="text-xs pixel-text-gray-500 text-center mt-2">
-                Use demo account to explore all features
+            <div className="mt-6 pt-4 border-t border-gray-700">
+              <p className="text-xs text-gray-400 text-center">
+                By continuing, you agree to our{' '}
+                <a href="/terms" className="text-cyan-400 hover:text-cyan-300">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" className="text-cyan-400 hover:text-cyan-300">
+                  Privacy Policy
+                </a>
               </p>
             </div>
           </PixelCard>
-        </PixelSection>
+
+          <div className="text-center mt-6">
+            <p className="text-gray-400 text-sm">
+              Need help?{' '}
+              <a href="mailto:support@rscit.tech" className="text-cyan-400 hover:text-cyan-300">
+                Contact Support
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
     </>
   )

@@ -1,421 +1,498 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { PixelCard, PixelButton, PixelTitle, PixelGrid } from '../components/PixelComponents'
+import FreeMapComponent from '../components/FreeMapComponent'
+import FreeEnquiryForm from '../components/FreeEnquiryForm'
+import VideoPlayer from '../components/VideoPlayer'
+import { getSampleCourseVideos, getYouTubeThumbnails } from '../utils/youtube-free'
+import { getCurrentLocationFree } from '../utils/maps-alternatives'
 import { useAuth } from '../contexts/AuthContext'
-import { 
-  PixelCard, 
-  PixelButton, 
-  PixelIcon, 
-  PixelTitle, 
-  PixelGrid,
-  PixelSection
-} from '@/components/ui/PixelComponents'
 import toast from 'react-hot-toast'
 
 const HomePage = () => {
   const { user } = useAuth()
-  const [currentExample, setCurrentExample] = useState(0)
+  const [todaysLesson, setTodaysLesson] = useState(getSampleCourseVideos()[0])
+  const [stats, setStats] = useState({
+    totalStudents: 2847,
+    activeCenters: 156,
+    successRate: 94,
+    averageScore: 87
+  })
+  const [showEnquiryForm, setShowEnquiryForm] = useState(false)
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
 
-  // Demo pixel art examples
-  const examples = [
-    {
-      title: "🎨 Modern Pixel Art",
-      description: "Clean, professional design with smooth animations",
-      demo: "✨ Beautiful Cards"
-    },
-    {
-      title: "🚀 Interactive Components", 
-      description: "Responsive buttons, icons, and layouts",
-      demo: "📱 Mobile-First"
-    },
-    {
-      title: "🌈 Rich Color Palette",
-      description: "Carefully selected colors for accessibility",
-      demo: "🎯 User-Friendly"
-    }
-  ]
-
-  const pages = [
-    {
-      title: '🎨 Pixel Test',
-      description: 'Basic pixel art design showcase with modern colors and animations',
-      href: '/pixel-test',
-      color: 'from-blue-500 to-blue-600',
-      icon: '🎯',
-      status: 'Ready'
-    },
-    {
-      title: '🏠 Pixel Landing',
-      description: 'Complete landing page with React components and interactive features',
-      href: '/pixel-landing',
-      color: 'from-purple-500 to-purple-600',
-      icon: '🚀',
-      status: 'Ready'
-    },
-    {
-      title: '🎓 Student Dashboard',
-      description: 'Student learning dashboard with progress tracking and achievements',
-      href: '/student-dashboard',
-      color: 'from-green-500 to-green-600',
-      icon: '📚',
-      status: 'Ready'
-    },
-    {
-      title: '🏢 Partner Dashboard',
-      description: 'Partner performance dashboard with revenue and analytics',
-      href: '/partner-dashboard',
-      color: 'from-orange-500 to-orange-600',
-      icon: '📊',
-      status: 'Ready'
-    },
-    {
-      title: '👥 Partner Admin',
-      description: 'Admin panel for managing partners and training centers',
-      href: '/partner-admin',
-      color: 'from-red-500 to-red-600',
-      icon: '⚙️',
-      status: 'Ready'
-    },
-    {
-      title: '💳 Pixel Payment',
-      description: 'Secure payment system with EMI options and multiple methods',
-      href: '/pixel-payment',
-      color: 'from-pink-500 to-pink-600',
-      icon: '💰',
-      status: 'Ready'
-    },
-    {
-      title: '📊 Pixel Analytics',
-      description: 'Comprehensive analytics dashboard with interactive charts',
-      href: '/pixel-analytics',
-      color: 'from-indigo-500 to-indigo-600',
-      icon: '📈',
-      status: 'Ready'
-    }
-  ]
-
-  // Cycle through examples
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentExample((prev) => (prev + 1) % examples.length)
-    }, 3000)
-    return () => clearInterval(interval)
+    // Get user location for personalized experience
+    getCurrentLocationFree().then(setUserLocation).catch(() => {})
+    
+    // Animate stats on load
+    const timer = setTimeout(() => {
+      setStats(prev => ({
+        totalStudents: prev.totalStudents + Math.floor(Math.random() * 10),
+        activeCenters: prev.activeCenters,
+        successRate: prev.successRate,
+        averageScore: prev.averageScore
+      }))
+    }, 2000)
+
+    return () => clearTimeout(timer)
   }, [])
 
-  const handleTestToast = () => {
-    toast.success('🎉 Pixel art design system working perfectly!', {
-      duration: 3000,
-      style: {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        border: '2px solid #ffffff40',
-        backdropFilter: 'blur(16px)'
-      }
-    })
+  const handleGetStarted = () => {
+    if (user) {
+      window.location.href = '/dashboard'
+    } else {
+      setShowEnquiryForm(true)
+    }
+  }
+
+  const handleWatchFreeLesson = () => {
+    const element = document.getElementById('free-lesson')
+    element?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
     <>
       <Head>
-        <title>🎨 RS-CIT Platform - Pixel Art Design System</title>
-        <meta name="description" content="Modern pixel art design system for RS-CIT learning platform" />
+        <title>RS-CIT Platform - Learn Computer Skills, Get Certified, Find Jobs</title>
+        <meta name="description" content="Master computer skills with RS-CIT certification. Find nearby centers, watch free lessons, and boost your career prospects. 94% success rate!" />
+        <meta name="keywords" content="RS-CIT, computer course, certification, job training, Excel, Word, PowerPoint" />
+        <meta property="og:title" content="RS-CIT Platform - Computer Skills That Get You Jobs" />
+        <meta property="og:description" content="Join 2,847+ students who learned computer skills and got certified. Find your nearest center and start today!" />
+        <meta property="og:type" content="website" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Hero Section */}
-        <PixelSection className="relative overflow-hidden">
-          <div className="pixel-container py-16">
-            <div className="text-center relative z-10">
-              {/* Bouncing Icon */}
-              <div className="pixel-bounce mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-5xl mx-auto mb-4 shadow-2xl">
-                  🎨
-                </div>
+      <div className="min-h-screen bg-gray-900">
+        {/* Navigation */}
+        <nav className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl">🎓</span>
+                <span className="text-xl font-bold text-white">RS-CIT Platform</span>
               </div>
               
-              <h1 className="text-4xl md:text-6xl font-bold pixel-text-gray-800 mb-6">
-                RS-CIT <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Pixel Art</span> Platform
-              </h1>
-              
-              <p className="text-xl pixel-text-gray-600 mb-8 max-w-3xl mx-auto">
-                Experience our modern pixel art design system with clean colors, smooth animations, 
-                and professional components for the RS-CIT learning platform.
-              </p>
-              
-              {/* Interactive Demo */}
-              <div className="mb-8">
-                <PixelCard className="max-w-md mx-auto">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">{examples[currentExample].icon || '✨'}</div>
-                    <h3 className="font-semibold pixel-text-gray-800 mb-2">
-                      {examples[currentExample].title}
-                    </h3>
-                    <p className="pixel-text-gray-600 text-sm mb-4">
-                      {examples[currentExample].description}
-                    </p>
-                    <div className="pixel-button-sm pixel-button-primary">
-                      {examples[currentExample].demo}
-                    </div>
-                  </div>
-                </PixelCard>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <PixelButton 
-                  onClick={handleTestToast}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  🚀 Test Components
-                </PixelButton>
-                <PixelButton 
-                  variant="outline" 
-                  color="primary"
-                  onClick={() => window.scrollTo({ top: 600, behavior: 'smooth' })}
-                >
-                  📖 Explore Pages
-                </PixelButton>
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#courses" className="text-gray-300 hover:text-white transition-colors">Courses</a>
+                <a href="#centers" className="text-gray-300 hover:text-white transition-colors">Find Centers</a>
+                <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Success Stories</a>
+                <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
               </div>
 
-              {/* Stats */}
-              <PixelGrid cols={4} className="mb-16">
-                <PixelCard className="text-center">
-                  <div className="text-3xl font-bold pixel-text-gray-800 mb-2">7</div>
-                  <div className="text-sm pixel-text-gray-500">Demo Pages</div>
+              <div className="flex items-center space-x-3">
+                {user ? (
+                  <Link href="/dashboard">
+                    <PixelButton size="sm">Dashboard</PixelButton>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/auth">
+                      <PixelButton variant="outline" size="sm">Login</PixelButton>
+                    </Link>
+                    <PixelButton onClick={handleGetStarted} size="sm">
+                      Get Started
+                    </PixelButton>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <section className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-900 py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-flex items-center space-x-2 bg-green-900/30 border border-green-700 rounded-full px-4 py-2 mb-6">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  <span className="text-green-300 text-sm">🔥 Live enrollment open</span>
+                </div>
+
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                  Master Computer Skills.
+                  <span className="text-cyan-400"> Get Certified.</span>
+                  <span className="text-green-400"> Find Jobs.</span>
+                </h1>
+
+                <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                  Join 2,847+ students who learned MS Office, Internet, and essential computer skills. 
+                  Get RS-CIT certified and boost your career prospects with 94% success rate.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <PixelButton onClick={handleGetStarted} className="text-lg px-8 py-3">
+                    🚀 Start Free Trial
+                  </PixelButton>
+                  <PixelButton 
+                    variant="outline" 
+                    onClick={handleWatchFreeLesson}
+                    className="text-lg px-8 py-3"
+                  >
+                    📺 Watch Free Lesson
+                  </PixelButton>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="flex items-center space-x-6 text-sm text-gray-400">
+                  <div className="flex items-center space-x-1">
+                    <span>⭐</span>
+                    <span>4.8/5 rating</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span>🎯</span>
+                    <span>94% success rate</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span>🏆</span>
+                    <span>Government certified</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative">
+                <PixelCard className="overflow-hidden">
+                  <img
+                    src={todaysLesson.thumbnail}
+                    alt="RS-CIT Course Preview"
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <PixelButton onClick={handleWatchFreeLesson} className="text-lg">
+                      ▶️ Watch Free Lesson
+                    </PixelButton>
+                  </div>
                 </PixelCard>
-                <PixelCard className="text-center">
-                  <div className="text-3xl font-bold pixel-text-gray-800 mb-2">50+</div>
-                  <div className="text-sm pixel-text-gray-500">Components</div>
+
+                {/* Floating Stats */}
+                <div className="absolute -bottom-6 -left-6 bg-white rounded-lg p-4 shadow-xl">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">{stats.totalStudents.toLocaleString()}</div>
+                    <div className="text-sm text-gray-600">Students Enrolled</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 bg-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <PixelGrid cols={4} className="gap-6">
+              <PixelCard className="p-6 text-center">
+                <div className="text-4xl font-bold text-cyan-400 mb-2">
+                  {stats.totalStudents.toLocaleString()}+
+                </div>
+                <div className="text-gray-300">Students Trained</div>
+              </PixelCard>
+              
+              <PixelCard className="p-6 text-center">
+                <div className="text-4xl font-bold text-green-400 mb-2">
+                  {stats.activeCenters}+
+                </div>
+                <div className="text-gray-300">Active Centers</div>
+              </PixelCard>
+              
+              <PixelCard className="p-6 text-center">
+                <div className="text-4xl font-bold text-blue-400 mb-2">
+                  {stats.successRate}%
+                </div>
+                <div className="text-gray-300">Success Rate</div>
+              </PixelCard>
+              
+              <PixelCard className="p-6 text-center">
+                <div className="text-4xl font-bold text-purple-400 mb-2">
+                  {stats.averageScore}%
+                </div>
+                <div className="text-gray-300">Average Score</div>
+              </PixelCard>
+            </PixelGrid>
+          </div>
+        </section>
+
+        {/* Today's Free Lesson */}
+        <section id="free-lesson" className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                🎯 Today&apos;s Free Lesson
+              </h2>
+              <p className="text-xl text-gray-400">
+                Get a taste of our premium content - no registration required!
+              </p>
+            </div>
+
+            <div className="max-w-4xl mx-auto">
+              <VideoPlayer
+                videoId={todaysLesson.videoId}
+                title={todaysLesson.title}
+                description={todaysLesson.description}
+                onVideoEnd={() => {
+                  toast.success('🎉 Lesson completed! Ready for the full course?')
+                  setTimeout(() => setShowEnquiryForm(true), 2000)
+                }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Course Modules */}
+        <section id="courses" className="py-16 bg-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                🎓 Complete RS-CIT Course
+              </h2>
+              <p className="text-xl text-gray-400">
+                Master all essential computer skills with our comprehensive curriculum
+              </p>
+            </div>
+
+            <PixelGrid cols={3} className="gap-6">
+              <PixelCard className="p-6">
+                <div className="text-4xl mb-4">💻</div>
+                <h3 className="text-xl font-bold text-white mb-3">Computer Fundamentals</h3>
+                <p className="text-gray-400 mb-4">
+                  Learn basic computer operations, hardware, software, and operating systems.
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  <li>• Computer basics & terminology</li>
+                  <li>• Windows operation</li>
+                  <li>• File management</li>
+                  <li>• Hardware components</li>
+                </ul>
+              </PixelCard>
+
+              <PixelCard className="p-6">
+                <div className="text-4xl mb-4">📝</div>
+                <h3 className="text-xl font-bold text-white mb-3">MS Office Suite</h3>
+                <p className="text-gray-400 mb-4">
+                  Master Word, Excel, PowerPoint - the essential tools for any office job.
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  <li>• MS Word - Documents & formatting</li>
+                  <li>• MS Excel - Spreadsheets & formulas</li>
+                  <li>• MS PowerPoint - Presentations</li>
+                  <li>• Practical projects</li>
+                </ul>
+              </PixelCard>
+
+              <PixelCard className="p-6">
+                <div className="text-4xl mb-4">🌐</div>
+                <h3 className="text-xl font-bold text-white mb-3">Internet & Email</h3>
+                <p className="text-gray-400 mb-4">
+                  Navigate the web safely and communicate professionally online.
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  <li>• Web browsing & search</li>
+                  <li>• Email setup & management</li>
+                  <li>• Online safety & security</li>
+                  <li>• Digital payments</li>
+                </ul>
+              </PixelCard>
+            </PixelGrid>
+          </div>
+        </section>
+
+        {/* Find Centers */}
+        <section id="centers" className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                📍 Find Your Nearest Center
+              </h2>
+              <p className="text-xl text-gray-400">
+                Learn at a center near you with experienced instructors and hands-on practice
+              </p>
+            </div>
+
+            <FreeMapComponent />
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section id="pricing" className="py-16 bg-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                💰 Affordable Pricing
+              </h2>
+              <p className="text-xl text-gray-400">
+                Quality education at prices that won&apos;t break the bank
+              </p>
+            </div>
+
+            <div className="max-w-4xl mx-auto">
+              <PixelGrid cols={2} className="gap-8">
+                <PixelCard className="p-8 relative">
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-white mb-4">Basic Course</h3>
+                    <div className="text-4xl font-bold text-cyan-400 mb-2">₹2,500</div>
+                    <div className="text-gray-400 mb-6">One-time payment</div>
+                    
+                    <ul className="text-left space-y-3 mb-8">
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Complete RS-CIT curriculum</span>
+                      </li>
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Hands-on practice sessions</span>
+                      </li>
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Certificate upon completion</span>
+                      </li>
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Job placement assistance</span>
+                      </li>
+                    </ul>
+                    
+                    <PixelButton onClick={handleGetStarted} className="w-full">
+                      Enroll Now
+                    </PixelButton>
+                  </div>
                 </PixelCard>
-                <PixelCard className="text-center">
-                  <div className="text-3xl font-bold pixel-text-gray-800 mb-2">100%</div>
-                  <div className="text-sm pixel-text-gray-500">Responsive</div>
-                </PixelCard>
-                <PixelCard className="text-center">
-                  <div className="text-3xl font-bold pixel-text-gray-800 mb-2">✨</div>
-                  <div className="text-sm pixel-text-gray-500">Modern</div>
+
+                <PixelCard className="p-8 relative border-2 border-cyan-500">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-cyan-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                      Most Popular
+                    </span>
+                  </div>
+                  
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-white mb-4">EMI Option</h3>
+                    <div className="text-4xl font-bold text-green-400 mb-2">₹625</div>
+                    <div className="text-gray-400 mb-6">Per month × 4 months</div>
+                    
+                    <ul className="text-left space-y-3 mb-8">
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Everything in Basic Course</span>
+                      </li>
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Flexible payment schedule</span>
+                      </li>
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Extended support period</span>
+                      </li>
+                      <li className="flex items-center space-x-2">
+                        <span className="text-green-400">✓</span>
+                        <span className="text-gray-300">Free revision classes</span>
+                      </li>
+                    </ul>
+                    
+                    <PixelButton onClick={handleGetStarted} className="w-full">
+                      Start with EMI
+                    </PixelButton>
+                  </div>
                 </PixelCard>
               </PixelGrid>
             </div>
           </div>
-        </PixelSection>
+        </section>
 
-        {/* Pages Grid */}
-        <PixelSection>
-          <div className="pixel-container">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold pixel-text-gray-800 mb-4">
-                🎯 Explore Our Pages
-              </h2>
-              <p className="pixel-text-gray-600 text-lg max-w-2xl mx-auto">
-                Each page showcases different aspects of our pixel art design system
-              </p>
+        {/* CTA Section */}
+        <section className="py-16 bg-gradient-to-r from-cyan-600 to-blue-600">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Ready to Transform Your Career?
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Join thousands of students who&apos;ve already boosted their careers with RS-CIT certification
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <PixelButton 
+                onClick={handleGetStarted} 
+                className="text-lg px-8 py-3 bg-white text-blue-600 hover:bg-gray-100"
+              >
+                🚀 Start Your Journey Today
+              </PixelButton>
+              <PixelButton 
+                variant="outline" 
+                onClick={() => setShowEnquiryForm(true)}
+                className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-blue-600"
+              >
+                📞 Talk to Our Team
+              </PixelButton>
             </div>
-            
-            <PixelGrid cols={3}>
-              {pages.map((page, index) => (
-                <Link
-                  key={index}
-                  href={page.href}
-                  className="group block transform transition-all duration-300 hover:scale-105"
-                >
-                  <PixelCard className="h-full cursor-pointer relative overflow-hidden">
-                    {/* Status Badge */}
-                    <div className="absolute top-4 right-4 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                      {page.status}
-                    </div>
-                    
-                    <div className={`w-16 h-16 bg-gradient-to-br ${page.color} rounded-xl flex items-center justify-center text-2xl text-white mb-4 mx-auto group-hover:scale-110 transition-transform shadow-lg`}>
-                      {page.icon}
-                    </div>
-                    
-                    <h3 className="text-xl font-semibold mb-3 pixel-text-gray-800 text-center">
-                      {page.title}
-                    </h3>
-                    
-                    <p className="pixel-text-gray-600 text-center text-sm leading-relaxed mb-4">
-                      {page.description}
-                    </p>
-                    
-                    <div className="text-center">
-                      <span className="inline-flex items-center gap-2 text-blue-600 font-medium text-sm group-hover:gap-3 transition-all">
-                        Visit Page
-                        <span className="group-hover:translate-x-1 transition-transform">→</span>
-                      </span>
-                    </div>
-                  </PixelCard>
-                </Link>
-              ))}
-            </PixelGrid>
           </div>
-        </PixelSection>
-
-        {/* Features Section */}
-        <PixelSection className="bg-white">
-          <div className="pixel-container">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold pixel-text-gray-800 mb-4">
-                🎨 Design System Features
-              </h2>
-              <p className="pixel-text-gray-600 text-lg max-w-2xl mx-auto">
-                Our pixel art design system combines modern aesthetics with practical functionality
-              </p>
-            </div>
-            
-            <PixelGrid cols={4}>
-              <div className="text-center">
-                <PixelIcon size="lg" color="primary">🎯</PixelIcon>
-                <h3 className="font-semibold pixel-text-gray-800 mb-2 mt-4">Clean Design</h3>
-                <p className="pixel-text-gray-600 text-sm">Modern pixel art with professional aesthetics</p>
-              </div>
-              
-              <div className="text-center">
-                <PixelIcon size="lg" color="success">📱</PixelIcon>
-                <h3 className="font-semibold pixel-text-gray-800 mb-2 mt-4">Responsive</h3>
-                <p className="pixel-text-gray-600 text-sm">Works perfectly on all device sizes</p>
-              </div>
-              
-              <div className="text-center">
-                <PixelIcon size="lg" color="warning">⚡</PixelIcon>
-                <h3 className="font-semibold pixel-text-gray-800 mb-2 mt-4">Fast</h3>
-                <p className="pixel-text-gray-600 text-sm">Optimized performance and smooth animations</p>
-              </div>
-              
-              <div className="text-center">
-                <PixelIcon size="lg" color="accent">🛡️</PixelIcon>
-                <h3 className="font-semibold pixel-text-gray-800 mb-2 mt-4">Secure</h3>
-                <p className="pixel-text-gray-600 text-sm">Built with security and accessibility in mind</p>
-              </div>
-            </PixelGrid>
-          </div>
-        </PixelSection>
-
-        {/* Technology Stack */}
-        <PixelSection>
-          <div className="pixel-container">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold pixel-text-gray-800 mb-4">
-                🛠️ Technology Stack
-              </h2>
-              <p className="pixel-text-gray-600 text-lg max-w-2xl mx-auto">
-                Built with modern tools and technologies for optimal performance
-              </p>
-            </div>
-            
-            <PixelCard className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div className="group">
-                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">⚛️</div>
-                  <div className="font-semibold pixel-text-gray-800">React</div>
-                  <div className="text-sm pixel-text-gray-600">Next.js 14</div>
-                </div>
-                
-                <div className="group">
-                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🎨</div>
-                  <div className="font-semibold pixel-text-gray-800">Tailwind</div>
-                  <div className="text-sm pixel-text-gray-600">CSS Framework</div>
-                </div>
-                
-                <div className="group">
-                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🗄️</div>
-                  <div className="font-semibold pixel-text-gray-800">Supabase</div>
-                  <div className="text-sm pixel-text-gray-600">Database & Auth</div>
-                </div>
-                
-                <div className="group">
-                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📝</div>
-                  <div className="font-semibold pixel-text-gray-800">TypeScript</div>
-                  <div className="text-sm pixel-text-gray-600">Type Safety</div>
-                </div>
-              </div>
-            </PixelCard>
-          </div>
-        </PixelSection>
-
-        {/* User Authentication Section */}
-        {user ? (
-          <PixelSection className="bg-green-50">
-            <div className="pixel-container text-center">
-              <PixelCard className="max-w-md mx-auto">
-                <PixelIcon size="lg" color="success">👋</PixelIcon>
-                <h3 className="text-xl font-semibold pixel-text-gray-800 mb-2 mt-4">
-                  Welcome back, {user.email}!
-                </h3>
-                <p className="pixel-text-gray-600 mb-4">
-                  You're logged in and ready to explore all features
-                </p>
-                <div className="flex gap-4 justify-center">
-                  <Link href="/student-dashboard">
-                    <PixelButton color="success">
-                      🎓 Student Dashboard
-                    </PixelButton>
-                  </Link>
-                  <Link href="/partner-dashboard">
-                    <PixelButton variant="outline" color="success">
-                      🏢 Partner Dashboard
-                    </PixelButton>
-                  </Link>
-                </div>
-              </PixelCard>
-            </div>
-          </PixelSection>
-        ) : (
-          <PixelSection className="bg-blue-50">
-            <div className="pixel-container text-center">
-              <PixelCard className="max-w-md mx-auto">
-                <PixelIcon size="lg" color="primary">🔐</PixelIcon>
-                <h3 className="text-xl font-semibold pixel-text-gray-800 mb-2 mt-4">
-                  Sign In to Get Started
-                </h3>
-                <p className="pixel-text-gray-600 mb-4">
-                  Access all features including dashboards, payments, and analytics
-                </p>
-                <Link href="/auth">
-                  <PixelButton color="primary">
-                    🚀 Sign In / Sign Up
-                  </PixelButton>
-                </Link>
-              </PixelCard>
-            </div>
-          </PixelSection>
-        )}
+        </section>
 
         {/* Footer */}
-        <footer className="bg-gray-800 text-white">
-          <div className="pixel-container py-12">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-xl">
-                  🎨
+        <footer className="bg-gray-900 border-t border-gray-800 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div>
+                <div className="flex items-center space-x-2 mb-4">
+                  <span className="text-2xl">🎓</span>
+                  <span className="text-xl font-bold text-white">RS-CIT Platform</span>
                 </div>
-                <span className="font-bold text-xl">RS-CIT Pixel Platform</span>
-              </div>
-              <p className="text-gray-400 mb-6 text-lg">
-                Modern pixel art design system for educational platforms
-              </p>
-              <div className="flex justify-center gap-8 text-gray-400 mb-6">
-                <span className="flex items-center gap-2">
-                  <span>🛡️</span>
-                  <span>Secure</span>
-                </span>
-                <span className="flex items-center gap-2">
-                  <span>🏆</span>
-                  <span>Government Certified</span>
-                </span>
-                <span className="flex items-center gap-2">
-                  <span>❤️</span>
-                  <span>Made in India</span>
-                </span>
-              </div>
-              <div className="border-t border-gray-700 pt-6">
-                <p className="text-gray-500 text-sm">
-                  © 2024 RS-CIT Platform. All rights reserved.
+                <p className="text-gray-400">
+                  Empowering students with essential computer skills for a digital future.
                 </p>
               </div>
+              
+              <div>
+                <h4 className="font-semibold text-white mb-4">Quick Links</h4>
+                <ul className="space-y-2 text-gray-400">
+                  <li><a href="#courses" className="hover:text-white">Courses</a></li>
+                  <li><a href="#centers" className="hover:text-white">Find Centers</a></li>
+                  <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
+                  <li><Link href="/auth" className="hover:text-white">Login</Link></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-white mb-4">Support</h4>
+                <ul className="space-y-2 text-gray-400">
+                  <li>📞 +91-9876543210</li>
+                  <li>📧 info@rscit-platform.com</li>
+                  <li>💬 Live Chat Support</li>
+                  <li>🕒 Mon-Fri 9AM-6PM</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-white mb-4">Follow Us</h4>
+                <div className="flex space-x-4">
+                  <span className="text-2xl cursor-pointer hover:text-blue-400">📘</span>
+                  <span className="text-2xl cursor-pointer hover:text-blue-400">🐦</span>
+                  <span className="text-2xl cursor-pointer hover:text-red-400">📺</span>
+                  <span className="text-2xl cursor-pointer hover:text-green-400">📱</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+              <p>&copy; 2024 RS-CIT Platform. All rights reserved. Made with ❤️ for students.</p>
             </div>
           </div>
         </footer>
+
+        {/* Enquiry Form Modal */}
+        {showEnquiryForm && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="relative">
+                <button
+                  onClick={() => setShowEnquiryForm(false)}
+                  className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 bg-black/20 rounded-full p-2"
+                >
+                  ✕
+                </button>
+                <FreeEnquiryForm />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

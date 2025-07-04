@@ -30,7 +30,7 @@ import {
   Calendar,
   Filter
 } from 'lucide-react'
-import { useAuth } from '@/components/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 
 interface AnalyticsData {
   overview: {

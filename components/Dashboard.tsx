@@ -73,6 +73,77 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true)
+        
+        // Fetch user progress
+        const { data: progressData } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', user?.id)
+  
+        // Fetch today's lesson
+        const { data: lessonData } = await supabase
+          .from('lessons')
+          .select('*')
+          .order('order')
+          .limit(1)
+  
+        // Calculate stats
+        const completedLessons = progressData?.filter(p => p.completed) || []
+        const totalScore = completedLessons.reduce((sum, p) => sum + (p.score || 0), 0)
+        
+        setStats({
+          lessonsCompleted: completedLessons.length,
+          totalLessons: 132,
+          currentStreak: 7, // This would be calculated based on consecutive days
+          totalPoints: totalScore,
+          averageScore: completedLessons.length > 0 ? Math.round(totalScore / completedLessons.length) : 0,
+          daysRemaining: 90 // This would be calculated based on enrollment date
+        })
+  
+        // Set today's lesson
+        if (lessonData && lessonData[0]) {
+          const isCompleted = progressData?.some(p => p.lesson_id === lessonData[0].id && p.completed) || false
+          setTodayLesson({
+            ...lessonData[0],
+            completed: isCompleted
+          })
+        }
+  
+        // Set achievements (mock data for now)
+        setAchievements([
+          {
+            id: '1',
+            title: 'First Steps',
+            description: 'Complete your first lesson',
+            icon: '🎯',
+            earned: completedLessons.length > 0,
+            earned_at: completedLessons.length > 0 ? new Date().toISOString() : undefined
+          },
+          {
+            id: '2',
+            title: 'Week Warrior',
+            description: 'Maintain a 7-day streak',
+            icon: '🔥',
+            earned: false
+          },
+          {
+            id: '3',
+            title: 'Quiz Master',
+            description: 'Score 90%+ on 5 quizzes',
+            icon: '🏆',
+            earned: false
+          }
+        ])
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (user) {
       fetchDashboardData()
     }
@@ -227,7 +298,7 @@ export default function Dashboard() {
             Welcome back, {user?.user_metadata?.name || 'Student'}!
           </h2>
           <p className="text-gray-600">
-            Ready to continue your RS-CIT journey? You're doing great!
+            Ready to continue your RS-CIT journey? You&apos;re doing great!
           </p>
         </div>
 
@@ -290,7 +361,7 @@ export default function Dashboard() {
             {/* Today's Lesson */}
             <div className="bg-white rounded-lg shadow">
               <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Lesson</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Today&apos;s Lesson</h3>
                 {todayLesson ? (
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">

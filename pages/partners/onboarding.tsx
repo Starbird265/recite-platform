@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { MapPin, Phone, Mail, User, Building, CreditCard, CheckCircle, AlertCircle, Upload, FileText } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../../lib/supabaseClient'
 import toast from 'react-hot-toast'
 
 interface CenterFormData {

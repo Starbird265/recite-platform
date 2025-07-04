@@ -100,7 +100,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
               
               <div className="grid md:grid-cols-2 gap-8 mb-8">
                 <div>
-                  <h4 className="font-semibold mb-4">What's Included:</h4>
+                  <h4 className="font-semibold mb-4">What&apos;s Included:</h4>
                   <ul className="space-y-2">
                     <li className="flex items-center gap-2">
                       <Check className="w-5 h-5 text-green-500" />

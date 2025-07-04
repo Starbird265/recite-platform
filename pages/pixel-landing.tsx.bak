@@ -8,7 +8,7 @@ import {
   PixelStats, 
   PixelSection, 
   PixelGrid 
-} from '@/components/ui/PixelComponents'
+} from '../components/PixelComponents'
 
 const PixelLanding: React.FC = () => {
   const [learnerCount, setLearnerCount] = useState(0)
@@ -252,7 +252,7 @@ const PixelLanding: React.FC = () => {
               </div>
               
               <p className="pixel-text-gray-600 italic mb-4 leading-relaxed">
-                "{testimonial.text}"
+                &quot;{testimonial.text}&quot;
               </p>
               
               <div className="font-semibold pixel-text-gray-800 mb-1">
