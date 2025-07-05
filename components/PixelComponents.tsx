@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react'
 
 // 🎮 Pixel Button Component
 interface PixelButtonProps {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'outline'
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'warning'
   size?: 'sm' | 'md' | 'lg'
   children: React.ReactNode
   onClick?: () => void
@@ -11,6 +11,7 @@ interface PixelButtonProps {
   className?: string
   icon?: LucideIcon
   type?: 'button' | 'submit' | 'reset'
+  color?: string
 }
 
 export const PixelButton: React.FC<PixelButtonProps> = ({
@@ -20,7 +21,8 @@ export const PixelButton: React.FC<PixelButtonProps> = ({
   onClick,
   disabled = false,
   className = '',
-  icon: Icon
+  icon: Icon,
+  color
 }) => {
   const baseClass = 'pixel-btn'
   const variantClass = `pixel-btn-${variant}`
@@ -30,11 +32,13 @@ export const PixelButton: React.FC<PixelButtonProps> = ({
     lg: 'px-8 py-4 text-lg'
   }[size]
 
+  const colorClass = color ? `pixel-btn-${color}` : '';
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClass} ${variantClass} ${sizeClass} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`${baseClass} ${variantClass} ${sizeClass} ${colorClass} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {Icon && <Icon className="h-4 w-4 mr-2" />}
       {children}

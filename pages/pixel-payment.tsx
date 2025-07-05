@@ -70,7 +70,7 @@ const PixelPayment = () => {
         'Expert Support'
       ],
       popular: false,
-      color: 'danger',
+      color: 'primary',
       icon: '⚡'
     },
     {

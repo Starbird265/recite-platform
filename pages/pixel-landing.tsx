@@ -153,10 +153,10 @@ const PixelLanding: React.FC = () => {
           </p>
           
           <div className={`flex flex-col sm:flex-row gap-4 justify-center mb-12 transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <PixelButton size="lg" color="primary">
+            <PixelButton size="lg" variant="primary">
               🚀 Start Learning - ₹783/month
             </PixelButton>
-            <PixelButton size="lg" variant="outline" color="primary">
+            <PixelButton size="lg" variant="outline">
               📍 Find Centers Near You
             </PixelButton>
           </div>
@@ -164,7 +164,7 @@ const PixelLanding: React.FC = () => {
           <PixelGrid cols={4} className={`transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {stats.map((stat, index) => (
               <PixelStats
-                key={index}
+                key={`stat-${index}`}
                 title={stat.label}
                 value={stat.number}
                 icon={() => <span className="text-2xl">⭐</span>}
@@ -181,7 +181,7 @@ const PixelLanding: React.FC = () => {
         
         <PixelGrid cols={2} gap="lg">
           {features.map((feature, index) => (
-            <PixelCard key={index} className={`text-center transition-all duration-700 delay-${index * 100}`}>
+            <PixelCard key={`feature-${index}`} className={`text-center transition-all duration-700 delay-${index * 100}`}>
               <PixelIcon size="md" color={feature.color}>
                 {feature.icon}
               </PixelIcon>
@@ -204,8 +204,7 @@ const PixelLanding: React.FC = () => {
           {pricingPlans.map((plan, index) => (
             <PixelCard 
               key={index} 
-              className={`text-center relative ${plan.popular ? 'transform scale-105 border-4 border-blue-500' : ''}`}
-            >
+              className={`text-center relative ${plan.popular ? 'transform scale-105 border-4 border-blue-500' : ''}`}>
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
                   ⭐ Most Popular
@@ -253,22 +252,22 @@ const PixelLanding: React.FC = () => {
         <h2 className="pixel-heading">What Our Students Say</h2>
         
         <PixelGrid cols={3} gap="lg">
-          {testimonials.map((testimonial, index) => (
-            <PixelCard key={index} className="text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl text-white mb-4 mx-auto">
-                {testimonial.avatar}
+          {testimonials.map((testimonialItem, index) => (
+            <PixelCard key={`${testimonialItem.name}-${testimonialItem.role}`} className="text-center">
+              <div role="img" aria-label={`${testimonialItem.name}'s avatar (${testimonialItem.role})`} className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl text-white mb-4 mx-auto">
+                {testimonialItem.avatar}
               </div>
               
               <p className="pixel-text-gray-600 italic mb-4 leading-relaxed">
-                &quot;{testimonial.text}&quot;
+                &quot;{testimonialItem.text}&quot;
               </p>
               
               <div className="font-semibold pixel-text-gray-800 mb-1">
-                {testimonial.name}
+                {testimonialItem.name}
               </div>
               
               <div className="pixel-text-gray-500 text-sm">
-                {testimonial.role}
+                {testimonialItem.role}
               </div>
             </PixelCard>
           ))}

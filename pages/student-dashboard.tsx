@@ -371,7 +371,7 @@ const StudentDashboard = () => {
                         Learn advanced Excel functions including VLOOKUP, HLOOKUP, and pivot tables 
                         to analyze data effectively.
                       </p>
-                      <PixelButton color="primary" className="w-full">
+                      <PixelButton variant="primary" className="w-full">
                         🎯 Start Learning
                       </PixelButton>
                     </div>
@@ -433,7 +433,6 @@ const StudentDashboard = () => {
                       </div>
                       <PixelButton 
                         size="sm" 
-                        color={lesson.isLocked ? 'secondary' : 'primary'}
                         variant={lesson.isLocked ? 'outline' : 'primary'}
                         className="w-full"
                       >

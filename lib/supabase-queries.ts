@@ -650,11 +650,7 @@ export const getRecentQuizAttempts = async (userId: string, limit: number = 5) =
         id,
         score,
         completed_at,
-        quiz:quizzes(
-          id,
-          module_id,
-          title
-        )
+        quiz:quizzes(id, module_id, title)
       `)
       .eq('user_id', userId)
       .eq('status', 'completed')
@@ -663,13 +659,15 @@ export const getRecentQuizAttempts = async (userId: string, limit: number = 5) =
 
     if (error) throw error
 
-    return data?.map(attempt => ({
-      id: attempt.id,
-      module: attempt.quiz?.module_id || 'Unknown Module',
-      title: attempt.quiz?.title || 'Unknown Title',
-      score: attempt.score || 0,
-      completedAt: attempt.completed_at
-    })) || []
+    return data?.map(attempt => {
+      return {
+        id: attempt.id,
+        module: attempt.quiz[0]?.module_id || 'Unknown Module',
+        title: attempt.quiz[0]?.title || 'Unknown Title',
+        score: attempt.score || 0,
+        completedAt: attempt.completed_at
+      }
+    }) || []
   } catch (error) {
     console.error('Error fetching recent quiz attempts:', error)
     return []
