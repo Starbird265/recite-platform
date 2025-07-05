@@ -62,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       referralSummary,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching admin dashboard data:', error);
     res.status(500).json({ error: 'Failed to fetch admin dashboard data.', details: error.message });
   }

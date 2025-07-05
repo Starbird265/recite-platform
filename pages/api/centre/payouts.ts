@@ -82,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 5. Respond with Payout Details
     return res.status(200).json({ message: 'Payout initiated successfully.', payout });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error initiating payout:', error);
     // Handle specific Razorpay errors if needed
     return res.status(500).json({ error: 'Failed to initiate payout.', details: error.message });

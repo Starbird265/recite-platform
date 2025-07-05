@@ -343,7 +343,7 @@ const PixelPayment = () => {
                       ))}
                     </div>
                     
-                    <PixelButton color={plan.color} className="w-full">
+                    <PixelButton variant={plan.color} className="w-full">
                       Select Plan
                     </PixelButton>
                   </PixelCard>
@@ -612,7 +612,7 @@ const PixelPayment = () => {
                     </PixelCard>
                     
                     <PixelButton
-                      color="success"
+                      variant="success"
                       className="w-full mt-6"
                       onClick={handlePayment}
                       disabled={loading}

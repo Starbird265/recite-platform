@@ -216,10 +216,10 @@ const PartnerDashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <PixelButton variant="outline" color="primary">
+                <PixelButton variant="outline">
                   📊 Generate Report
                 </PixelButton>
-                <PixelButton color="primary">
+                <PixelButton variant="primary">
                   ⚙️ Settings
                 </PixelButton>
               </div>
@@ -240,7 +240,17 @@ const PartnerDashboard = () => {
               {/* Stats Overview */}
               <PixelSection>
                 <h2 className="text-xl font-semibold mb-6 pixel-text-gray-800">📊 Performance Overview</h2>
-                <PixelStats stats={statsData} />
+                <PixelGrid cols={4}>
+                  {statsData.map((stat, index) => (
+                    <PixelStats
+                      key={index}
+                      title={stat.label}
+                      value={stat.number}
+                      icon={Users} // Placeholder icon
+                      iconColor={stat.color === 'primary' ? 'text-blue-400' : stat.color === 'success' ? 'text-green-400' : stat.color === 'warning' ? 'text-yellow-400' : 'text-purple-400'}
+                    />
+                  ))}
+                </PixelGrid>
               </PixelSection>
 
               {/* Quick Actions */}
@@ -318,7 +328,7 @@ const PartnerDashboard = () => {
                                 <span className="font-semibold pixel-text-gray-800 ml-1">₹{(center.revenue / 1000).toFixed(0)}K</span>
                               </div>
                             </div>
-                            <PixelButton variant="outline" size="sm" color="primary">
+                            <PixelButton variant="outline" size="sm">
                               View Details
                             </PixelButton>
                           </div>
@@ -336,7 +346,7 @@ const PartnerDashboard = () => {
                   <PixelIcon size="lg" color="warning">📈</PixelIcon>
                   <h3 className="text-lg font-semibold mb-2 pixel-text-gray-800">Revenue Chart</h3>
                   <p className="pixel-text-gray-600 mb-4">Monthly revenue trends and analytics</p>
-                  <PixelButton color="primary">View Full Analytics</PixelButton>
+                  <PixelButton variant="primary">View Full Analytics</PixelButton>
                 </PixelCard>
               </PixelSection>
             </div>

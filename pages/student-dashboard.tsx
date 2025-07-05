@@ -284,10 +284,10 @@ const StudentDashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <PixelButton variant="outline" color="primary">
+                <PixelButton variant="outline">
                   📊 Progress Report
                 </PixelButton>
-                <PixelButton color="primary">
+                <PixelButton variant="primary">
                   🎯 Continue Learning
                 </PixelButton>
               </div>

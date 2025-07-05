@@ -211,7 +211,7 @@ const PixelAnalytics = () => {
                   <option value="90d">Last 3 Months</option>
                   <option value="1y">Last Year</option>
                 </select>
-                <PixelButton variant="outline" color="primary">
+                <PixelButton variant="outline">
                   📄 Export Report
                 </PixelButton>
               </div>
@@ -430,7 +430,7 @@ const PixelAnalytics = () => {
                                 <div className="font-semibold pixel-text-gray-800">₹{(center.revenue / 1000).toFixed(0)}K</div>
                                 <div className="text-sm pixel-text-gray-500">Revenue</div>
                               </div>
-                              <PixelButton size="sm" variant="outline" color="primary">
+                              <PixelButton size="sm" variant="primary">
                                 View Details
                               </PixelButton>
                             </div>

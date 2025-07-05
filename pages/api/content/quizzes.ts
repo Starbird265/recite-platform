@@ -29,8 +29,7 @@ const quizMetadataPutSchema = z.object({
   duration_minutes: z.number().int().min(1, "Duration must be at least 1 minute.").optional(),
   num_questions: z.number().int().min(1, "Number of questions must be at least 1.").optional(),
   passing_score: z.number().int().min(0).max(100, "Passing score must be between 0 and 100.").optional(),
-  passing_score: z.number().int().min(0).max(100, "Passing score must be between 0 and 100.").optional(),
-  status: z.enum(['pending', 'approved', 'rejected'], "Invalid status value.").optional(),
+  status: z.enum(['pending', 'approved', 'rejected'], { message: "Invalid status value." }).optional(),
 }).refine(data => Object.keys(data).length > 1, {
   message: "At least one field (module_id, title, description, difficulty, duration_minutes, num_questions, passing_score, status) must be provided for update.",
 });
@@ -40,7 +39,7 @@ const quizQuestionPutSchema = z.object({
   question: z.string().min(1, "Question cannot be empty.").optional(),
   choices: z.array(z.string().min(1, "Choice cannot be empty.")).min(2, "At least two choices are required.").optional(),
   correct_index: z.number().int().min(0, "Correct index must be non-negative.").optional(),
-  status: z.enum(['pending', 'approved', 'rejected'], "Invalid status value.").optional(),
+  status: z.enum(['pending', 'approved', 'rejected'], { message: "Invalid status value." }).optional(),
 }).refine(data => Object.keys(data).length > 1, {
   message: "At least one field (question, choices, correct_index, status) must be provided for update.",
 });

@@ -15,7 +15,7 @@ const questionPutSchema = z.object({
   module_id: z.string().min(1, "Module ID cannot be empty.").optional(),
   title: z.string().min(1, "Title cannot be empty.").optional(),
   body: z.string().optional(),
-  status: z.enum(['pending', 'approved', 'rejected'], "Invalid status value.").optional(),
+  status: z.enum(['pending', 'approved', 'rejected'], { message: "Invalid status value." }).optional(),
 }).refine(data => Object.keys(data).length > 1, {
   message: "At least one field (module_id, title, body, status) must be provided for update.",
 });

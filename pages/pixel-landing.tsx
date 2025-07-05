@@ -161,9 +161,17 @@ const PixelLanding: React.FC = () => {
             </PixelButton>
           </div>
 
-          <div className={`transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <PixelStats stats={stats} />
-          </div>
+          <PixelGrid cols={4} className={`transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            {stats.map((stat, index) => (
+              <PixelStats
+                key={index}
+                title={stat.label}
+                value={stat.number}
+                icon={() => <span className="text-2xl">⭐</span>}
+                iconColor={stat.color}
+              />
+            ))}
+          </PixelGrid>
         </div>
       </PixelSection>
 
@@ -230,7 +238,7 @@ const PixelLanding: React.FC = () => {
               </div>
               
               <PixelButton 
-                color={plan.color} 
+                variant={plan.color} 
                 className="w-full"
               >
                 Choose Plan
@@ -284,10 +292,10 @@ const PixelLanding: React.FC = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <PixelButton size="lg" color="primary">
+              <PixelButton size="lg" variant="primary">
                 🚀 Get Started Today
               </PixelButton>
-              <PixelButton size="lg" variant="outline" color="primary">
+              <PixelButton size="lg" variant="outline">
                 📞 Talk to Our Team
               </PixelButton>
             </div>

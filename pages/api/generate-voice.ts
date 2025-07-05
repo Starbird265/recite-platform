@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Simulate a successful response for demonstration
     res.status(200).json({ message: 'Voice generation simulated successfully.', audioUrl: '/path/to/simulated-audio.mp3' });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating voice:', error);
     res.status(500).json({ error: 'Failed to generate voice.', details: error.message });
   }

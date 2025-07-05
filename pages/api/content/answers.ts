@@ -12,7 +12,7 @@ const answerPutSchema = z.object({
   id: z.string().uuid("Invalid answer ID format."),
   question_id: z.string().uuid("Invalid question ID format.").optional(),
   body: z.string().min(1, "Answer body cannot be empty.").optional(),
-  status: z.enum(['pending', 'approved', 'rejected'], "Invalid status value.").optional(),
+  status: z.enum(['pending', 'approved', 'rejected'], { message: "Invalid status value." }).optional(),
 }).refine(data => Object.keys(data).length > 1, {
   message: "At least one field (question_id, body, status) must be provided for update.",
 });

@@ -666,6 +666,7 @@ export const getRecentQuizAttempts = async (userId: string, limit: number = 5) =
     return data?.map(attempt => ({
       id: attempt.id,
       module: attempt.quiz?.module_id || 'Unknown Module',
+      title: attempt.quiz?.title || 'Unknown Title',
       score: attempt.score || 0,
       completedAt: attempt.completed_at
     })) || []

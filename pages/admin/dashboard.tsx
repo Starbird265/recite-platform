@@ -98,8 +98,8 @@ export default function AdminDashboard() {
         combinedActivity.push({
           id: ref.id,
           type: 'referral',
-          centre_name: ref.centres?.name || 'Unknown Centre',
-          description: `New referral to ${ref.centres?.name || 'Unknown Centre'} (Status: ${ref.status})`,
+          centre_name: ref.centres?.[0]?.name || 'Unknown Centre',
+          description: `New referral to ${ref.centres?.[0]?.name || 'Unknown Centre'} (Status: ${ref.status})`,
           timestamp: ref.created_at,
         });
       });

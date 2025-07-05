@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import { 
   PixelCard, 
   PixelButton, 
   PixelIcon, 
-  PixelTitle, 
   PixelGrid 
 } from '../components/PixelComponents'
 
@@ -43,8 +41,6 @@ const PartnerAdmin = () => {
   const [centers, setCenters] = useState<Center[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'partners' | 'centers' | 'analytics'>('partners')
-  const [showAddPartnerModal, setShowAddPartnerModal] = useState(false)
-  const [showAddCenterModal, setShowAddCenterModal] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -54,7 +50,7 @@ const PartnerAdmin = () => {
 
   const fetchData = async () => {
     try {
-      // Mock data for demo - replace with actual Supabase queries
+      // Mock data for demo
       setPartners([
         {
           id: '1',
@@ -143,13 +139,6 @@ const PartnerAdmin = () => {
 
   const handleApprovePartner = async (partnerId: string) => {
     try {
-      // Update partner status in database
-      // const { error } = await supabase
-      //   .from('partners')
-      //   .update({ status: 'active' })
-      //   .eq('id', partnerId)
-      
-      // Mock update for demo
       setPartners(prev => prev.map(p => 
         p.id === partnerId ? { ...p, status: 'active' as const } : p
       ))
@@ -163,7 +152,6 @@ const PartnerAdmin = () => {
 
   const handleRejectPartner = async (partnerId: string) => {
     try {
-      // Update partner status in database
       setPartners(prev => prev.map(p => 
         p.id === partnerId ? { ...p, status: 'inactive' as const } : p
       ))
@@ -173,10 +161,6 @@ const PartnerAdmin = () => {
       console.error('Error rejecting partner:', error)
       toast.error('Failed to reject partner')
     }
-  }
-
-  const generateReferralCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase()
   }
 
   const getStatusColor = (status: string) => {
@@ -211,7 +195,7 @@ const PartnerAdmin = () => {
   }
 
   return (
-    <>
+    <div>
       <Head>
         <title>👥 Partner Management - RS-CIT Admin</title>
         <meta name="description" content="Manage training partners and centers" />
@@ -233,10 +217,10 @@ const PartnerAdmin = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <PixelButton variant="outline" color="primary">
+                <PixelButton variant="outline">
                   📊 Export Data
                 </PixelButton>
-                <PixelButton color="success" onClick={() => setShowAddPartnerModal(true)}>
+                <PixelButton variant="success">
                   ➕ Add Partner
                 </PixelButton>
               </div>
@@ -283,19 +267,6 @@ const PartnerAdmin = () => {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold pixel-text-gray-800">Training Partners</h2>
-                    <div className="flex items-center gap-4">
-                      <select className="px-4 py-2 border border-gray-300 rounded-lg pixel-text-gray-700">
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="pending">Pending</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                      <input
-                        type="text"
-                        placeholder="Search partners..."
-                        className="px-4 py-2 border border-gray-300 rounded-lg pixel-text-gray-700"
-                      />
-                    </div>
                   </div>
 
                   <PixelGrid cols={1}>
@@ -336,15 +307,14 @@ const PartnerAdmin = () => {
                                 <div className="flex gap-2">
                                   <PixelButton
                                     size="sm"
-                                    color="success"
+                                    variant="success"
                                     onClick={() => handleApprovePartner(partner.id)}
                                   >
                                     ✅ Approve
                                   </PixelButton>
                                   <PixelButton
                                     size="sm"
-                                    variant="outline"
-                                    color="danger"
+                                    variant="danger"
                                     onClick={() => handleRejectPartner(partner.id)}
                                   >
                                     ❌ Reject
@@ -352,7 +322,7 @@ const PartnerAdmin = () => {
                                 </div>
                               )}
                               
-                              <PixelButton size="sm" variant="outline" color="primary">
+                              <PixelButton size="sm" variant="primary">
                                 View Details
                               </PixelButton>
                             </div>
@@ -369,34 +339,29 @@ const PartnerAdmin = () => {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold pixel-text-gray-800">Training Centers</h2>
-                    <PixelButton color="success" onClick={() => setShowAddCenterModal(true)}>
-                      🏢 Add Center
-                    </PixelButton>
                   </div>
 
-                  <PixelGrid cols={2}>
+                  <PixelGrid cols={1}>
                     {centers.map((center) => (
                       <PixelCard key={center.id}>
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold pixel-text-gray-800">{center.name}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(center.status)}`}>
-                            {getStatusIcon(center.status)} {center.status}
-                          </span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                          <p className="pixel-text-gray-600 text-sm">📍 {center.address}</p>
-                          <p className="pixel-text-gray-600 text-sm">🔗 {center.referralCode}</p>
-                          <p className="pixel-text-gray-500 text-sm">Created: {new Date(center.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                          <PixelButton size="sm" variant="outline" color="primary">
-                            📍 View on Map
-                          </PixelButton>
-                          <PixelButton size="sm" variant="outline" color="secondary">
-                            📊 Analytics
-                          </PixelButton>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <PixelIcon size="md" color="primary">🏢</PixelIcon>
+                            <div>
+                              <h3 className="font-semibold pixel-text-gray-800">{center.name}</h3>
+                              <p className="pixel-text-gray-600">{center.address}</p>
+                              <p className="pixel-text-gray-500 text-sm">Code: {center.referralCode}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            <PixelButton size="sm" variant="outline">
+                              📍 View on Map
+                            </PixelButton>
+                            <PixelButton size="sm" variant="secondary">
+                              📊 Analytics
+                            </PixelButton>
+                          </div>
                         </div>
                       </PixelCard>
                     ))}
@@ -439,7 +404,7 @@ const PartnerAdmin = () => {
                     <PixelIcon size="lg" color="primary">📊</PixelIcon>
                     <h3 className="text-lg font-semibold mb-2 pixel-text-gray-800">Advanced Analytics</h3>
                     <p className="pixel-text-gray-600 mb-4">Detailed partner performance metrics and trends</p>
-                    <PixelButton color="primary">View Full Report</PixelButton>
+                    <PixelButton variant="primary">View Full Report</PixelButton>
                   </PixelCard>
                 </div>
               )}
@@ -447,7 +412,7 @@ const PartnerAdmin = () => {
           )}
         </main>
       </div>
-    </>
+    </div>
   )
 }
 

@@ -10,6 +10,7 @@ interface PixelButtonProps {
   disabled?: boolean
   className?: string
   icon?: LucideIcon
+  type?: 'button' | 'submit' | 'reset'
 }
 
 export const PixelButton: React.FC<PixelButtonProps> = ({
@@ -426,6 +427,7 @@ export const PixelContainer: React.FC<PixelContainerProps> = ({
 interface PixelTypographyProps {
   children: React.ReactNode
   className?: string
+  size?: string
 }
 
 export const PixelTitle: React.FC<PixelTypographyProps> = ({ children, className = '' }) => (
@@ -538,6 +540,7 @@ interface PixelSectionProps {
   children: React.ReactNode
   className?: string
   dark?: boolean
+  background?: string
 }
 
 export const PixelSection: React.FC<PixelSectionProps> = ({
